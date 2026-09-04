@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Admin Dashboard | Karuppusamy C</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <!-- LOGIN SCREEN -->
+
+    <div class="login-screen" id="loginScreen">
+
+        <div class="login-card">
+
+            <div class="login-logo">
+                KC<span>.</span>
+            </div>
+
+            <p class="login-label">PRIVATE AREA</p>
+
+            <h1>Admin Access</h1>
+
+            <p class="login-description">
+                Sign in to manage your portfolio content.
+            </p>
+
+            <form id="loginForm">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="admin@example.com"
+                    required
+                >
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    class="login-button"
+                >
+                    Sign In
+                    <span>→</span>
+                </button>
+
+                <p
+                    class="login-message"
+                    id="loginMessage"
+                ></p>
+
+            </form>
+
+            <a
+                href="../frontend/index.html"
+                class="back-link"
+            >
+                ← Back to portfolio
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+
+    <div class="dashboard" id="dashboard">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-brand">
+
+                <div class="brand-mark">
+                    K
+                </div>
+
+                <div>
+                    <strong>Karuppusamy</strong>
+                    <span>Portfolio Admin</span>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <p class="nav-title">
+                    MANAGEMENT
+                </p>
+
+                <button
+                    class="sidebar-link active"
+                    data-page="overview"
+                >
+                    <span>⌂</span>
+                    Overview
+                </button>
+
+                <button
+                    class="sidebar-link"
+                    data-page="profile"
+                >
+                    <span>◎</span>
+                    Profile
+                </button>
+
+                <button
+                    class="sidebar-link"
+                    data-page="projects"
+                >
+                    <span>▣</span>
+                    Projects
+                </button>
+
+                <button
+                    class="sidebar-link"
+                    data-page="skills"
+                >
+                    <span>◇</span>
+                    Skills
+                </button>
+
+                <button
+                    class="sidebar-link"
+                    data-page="education"
+                >
+                    <span>⌁</span>
+                    Education
+                </button>
+
+                <button
+                    class="sidebar-link"
+                    data-page="certificates"
+                >
+                    <span>✦</span>
+                    Certificates
+                </button>
+
+                <button
+                    class="sidebar-link"
+                    data-page="resume"
+                >
+                    <span>▤</span>
+                    Resume
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <a
+                    href="../frontend/index.html"
+                    target="_blank"
+                    class="view-site"
+                >
+                    View Website ↗
+                </a>
+
+                <button
+                    class="logout-button"
+                    id="logoutButton"
+                >
+                    Log Out
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="dashboard-main">
+
+            <header class="dashboard-header">
+
+                <div>
+
+                    <p class="header-label">
+                        CONTROL CENTER
+                    </p>
+
+                    <h1 id="pageTitle">
+                        Overview
+                    </h1>
+
+                </div>
+
+                <div class="header-status">
+
+                    <span class="status-dot"></span>
+
+                    Portfolio System
+
+                </div>
+
+            </header>
+
+
+            <!-- OVERVIEW -->
+
+            <section
+                class="admin-page active"
+                id="page-overview"
+            >
+
+                <div class="welcome-card">
+
+                    <div>
+
+                        <p class="header-label">
+                            WELCOME BACK
+                        </p>
+
+                        <h2>
+                            Your portfolio,
+                            <span>your control.</span>
+                        </h2>
+
+                        <p>
+                            Manage your public portfolio content
+                            from one private dashboard.
+                        </p>
+
+                    </div>
+
+                    <div class="welcome-symbol">
+                        KC
+                    </div>
+
+                </div>
+
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+
+                        <span>PROJECTS</span>
+
+                        <strong>03</strong>
+
+                        <small>
+                            Demo concepts
+                        </small>
+
+                    </div>
+
+                    <div class="stat-card">
+
+                        <span>SKILLS</span>
+
+                        <strong>04</strong>
+
+                        <small>
+                            Skill categories
+                        </small>
+
+                    </div>
+
+                    <div class="stat-card">
+
+                        <span>CERTIFICATES</span>
+
+                        <strong>00</strong>
+
+                        <small>
+                            Ready to add
+                        </small>
+
+                    </div>
+
+                    <div class="stat-card">
+
+                        <span>WEBSITE</span>
+
+                        <strong>LIVE</strong>
+
+                        <small>
+                            Local preview
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="quick-section">
+
+                    <div class="section-title">
+
+                        <div>
+                            <p class="header-label">
+                                QUICK ACTIONS
+                            </p>
+
+                            <h3>
+                                Manage content
+                            </h3>
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-grid">
+
+                        <button
+                            class="quick-card"
+                            data-open="profile"
+                        >
+                            <span>◎</span>
+                            <strong>Edit Profile</strong>
+                            <small>
+                                Update your introduction
+                            </small>
+                        </button>
+
+
+                        <button
+                            class="quick-card"
+                            data-open="projects"
+                        >
+                            <span>▣</span>
+                            <strong>Add Project</strong>
+                            <small>
+                                Showcase your work
+                            </small>
+                        </button>
+
+
+                        <button
+                            class="quick-card"
+                            data-open="certificates"
+                        >
+                            <span>✦</span>
+                            <strong>Add Certificate</strong>
+                            <small>
+                                Upload achievements
+                            </small>
+                        </button>
+
+
+                        <button
+                            class="quick-card"
+                            data-open="resume"
+                        >
+                            <span>▤</span>
+                            <strong>Update Resume</strong>
+                            <small>
+                                Manage your CV
+                            </small>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- PROFILE -->
+
+            <section
+                class="admin-page"
+                id="page-profile"
+            >
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+                            <p class="header-label">
+                                PERSONAL INFORMATION
+                            </p>
+
+                            <h2>Profile</h2>
+                        </div>
+
+                        <span class="save-state">
+                            Not connected
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>
+                                Full Name
+                            </label>
+
+                            <input
+                                type="text"
+                                value="Karuppusamy C"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Professional Title
+                            </label>
+
+                            <input
+                                type="text"
+                                value="ECE Student · Technology Enthusiast"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label>
+                                Short Introduction
+                            </label>
+
+                            <textarea rows="5">I am an Electronics and Communication Engineering student interested in electronics, embedded systems, communication technologies and building practical technology solutions.</textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <button class="save-button">
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- PROJECTS -->
+
+            <section
+                class="admin-page"
+                id="page-projects"
+            >
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+                            <p class="header-label">
+                                PORTFOLIO CONTENT
+                            </p>
+
+                            <h2>Projects</h2>
+                        </div>
+
+                        <button class="add-button">
+                            + Add Project
+                        </button>
+
+                    </div>
+
+
+                    <div class="admin-list">
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">
+                                01
+                            </div>
+
+                            <div class="item-info">
+
+                                <strong>
+                                    Smart Environment Monitor
+                                </strong>
+
+                                <span>
+                                    ECE / IoT · Demo Concept
+                                </span>
+
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">
+                                02
+                            </div>
+
+                            <div class="item-info">
+
+                                <strong>
+                                    Digital Signal Visualizer
+                                </strong>
+
+                                <span>
+                                    Signals · Demo Concept
+                                </span>
+
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">
+                                03
+                            </div>
+
+                            <div class="item-info">
+
+                                <strong>
+                                    Mini Communication Link
+                                </strong>
+
+                                <span>
+                                    Communication · Demo Concept
+                                </span>
+
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- SKILLS -->
+
+            <section
+                class="admin-page"
+                id="page-skills"
+            >
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+                            <p class="header-label">
+                                ENGINEERING TOOLKIT
+                            </p>
+
+                            <h2>Skills</h2>
+                        </div>
+
+                        <button class="add-button">
+                            + Add Skill
+                        </button>
+
+                    </div>
+
+
+                    <div class="admin-list">
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">01</div>
+
+                            <div class="item-info">
+                                <strong>Electronics</strong>
+                                <span>Circuits · Components · Hardware</span>
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">02</div>
+
+                            <div class="item-info">
+                                <strong>Communication</strong>
+                                <span>Signals · Systems · Communication</span>
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">03</div>
+
+                            <div class="item-info">
+                                <strong>Embedded Systems</strong>
+                                <span>MCU · IoT · Embedded</span>
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">04</div>
+
+                            <div class="item-info">
+                                <strong>Programming</strong>
+                                <span>Programming · Logic · Web</span>
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- EDUCATION -->
+
+            <section
+                class="admin-page"
+                id="page-education"
+            >
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+                            <p class="header-label">
+                                ACADEMIC JOURNEY
+                            </p>
+
+                            <h2>Education</h2>
+
+                        </div>
+
+                        <button class="add-button">
+                            + Add Education
+                        </button>
+
+                    </div>
+
+
+                    <div class="admin-list">
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">01</div>
+
+                            <div class="item-info">
+
+                                <strong>
+                                    B.Tech — Electronics & Communication Engineering
+                                </strong>
+
+                                <span>
+                                    Dhanalakshmi Srinivasan University · Samayapuram
+                                </span>
+
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">02</div>
+
+                            <div class="item-info">
+
+                                <strong>
+                                    Higher Secondary Education
+                                </strong>
+
+                                <span>
+                                    Model Government School · Jegadhabi, Karur
+                                </span>
+
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+
+                        <div class="admin-list-item">
+
+                            <div class="item-icon">03</div>
+
+                            <div class="item-info">
+
+                                <strong>
+                                    School Education
+                                </strong>
+
+                                <span>
+                                    Karur Saraswathi Vidhyalaya · Karur
+                                </span>
+
+                            </div>
+
+                            <button class="edit-button">
+                                Edit
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- CERTIFICATES -->
+
+            <section
+                class="admin-page"
+                id="page-certificates"
+            >
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+
+                            <p class="header-label">
+                                ACHIEVEMENTS
+                            </p>
+
+                            <h2>Certificates</h2>
+
+                        </div>
+
+                        <button class="add-button">
+                            + Upload Certificate
+                        </button>
+
+                    </div>
+
+
+                    <div class="empty-admin">
+
+                        <div class="empty-icon">
+                            ✦
+                        </div>
+
+                        <h3>
+                            No certificates yet
+                        </h3>
+
+                        <p>
+                            Your certificates will appear here
+                            after you upload them.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- RESUME -->
+
+            <section
+                class="admin-page"
+                id="page-resume"
+            >
+
+                <div class="content-card">
+
+                    <div class="card-heading">
+
+                        <div>
+
+                            <p class="header-label">
+                                DOCUMENT
+                            </p>
+
+                            <h2>Resume</h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="upload-area">
+
+                        <div class="upload-icon">
+                            ↑
+                        </div>
+
+                        <h3>
+                            Upload your resume
+                        </h3>
+
+                        <p>
+                            PDF format recommended.
+                        </p>
+
+                        <label class="upload-button">
+
+                            Choose PDF
+
+                            <input
+                                type="file"
+                                accept=".pdf"
+                                hidden
+                            >
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
