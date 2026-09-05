@@ -1055,3 +1055,22 @@ console.log(
 console.log(
     "Public portfolio initialized with Supabase."
 );
+
+/* =========================================================
+   WEBSITE LOADER
+========================================================= */
+
+window.addEventListener("load", function () {
+
+    const loader =
+        document.getElementById("siteLoader");
+
+    if (!loader) return;
+
+    setTimeout(function () {
+
+        loader.classList.add("loader-hidden");
+
+    }, 700);
+
+});

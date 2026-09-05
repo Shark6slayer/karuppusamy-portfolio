@@ -2812,3 +2812,268 @@ img {
             0.01ms !important;
     }
 }
+
+/* =========================================================
+   WEBSITE LOADER
+========================================================= */
+
+#siteLoader {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 99999;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(55, 90, 160, 0.08),
+            transparent 38%
+        ),
+        #03050a;
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transition:
+        opacity 0.7s ease,
+        visibility 0.7s ease;
+}
+
+#siteLoader.loader-hidden {
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+}
+
+
+/* Logo container */
+
+.loader-logo-wrap {
+
+    position: relative;
+
+    width: 110px;
+
+    height: 110px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin-bottom: 25px;
+}
+
+
+/* Logo */
+
+.loader-logo {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 82px;
+
+    height: 82px;
+
+    object-fit: contain;
+
+    border-radius: 20px;
+
+    filter:
+        drop-shadow(
+            0 0 20px rgba(104,169,255,0.20)
+        );
+
+    animation:
+        loaderLogoPulse 2s ease-in-out infinite;
+}
+
+
+/* Animated ring */
+
+.loader-ring {
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: 50%;
+
+    border: 1px solid
+        rgba(104,169,255,0.20);
+
+    border-top-color:
+        var(--accent);
+
+    border-right-color:
+        var(--purple);
+
+    animation:
+        loaderSpin 1.8s linear infinite;
+}
+
+
+/* Small second ring */
+
+.loader-ring::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 9px;
+
+    border-radius: 50%;
+
+    border: 1px solid
+        rgba(154,124,255,0.10);
+
+    border-bottom-color:
+        var(--purple);
+}
+
+
+/* Name */
+
+.loader-name {
+
+    font-family:
+        var(--font-display);
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.20em;
+
+    color: var(--text);
+
+    margin-left: 0.20em;
+}
+
+.loader-name span {
+
+    color: var(--accent);
+}
+
+
+/* Loading line */
+
+.loader-line {
+
+    width: 145px;
+
+    height: 2px;
+
+    margin-top: 18px;
+
+    overflow: hidden;
+
+    border-radius: 100px;
+
+    background:
+        rgba(255,255,255,0.07);
+}
+
+.loader-progress {
+
+    width: 35%;
+
+    height: 100%;
+
+    border-radius: 100px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--accent),
+            var(--purple)
+        );
+
+    box-shadow:
+        0 0 12px
+        rgba(104,169,255,0.35);
+
+    animation:
+        loaderProgress 1.5s
+        ease-in-out infinite;
+}
+
+
+/* =========================================================
+   LOADER ANIMATIONS
+========================================================= */
+
+@keyframes loaderSpin {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loaderLogoPulse {
+
+    0%,
+    100% {
+
+        transform: scale(1);
+
+        opacity: 0.9;
+    }
+
+    50% {
+
+        transform: scale(1.045);
+
+        opacity: 1;
+    }
+}
+
+@keyframes loaderProgress {
+
+    0% {
+
+        transform:
+            translateX(-160%);
+    }
+
+    100% {
+
+        transform:
+            translateX(430%);
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .loader-logo,
+    .loader-ring,
+    .loader-progress {
+
+        animation: none;
+    }
+}
