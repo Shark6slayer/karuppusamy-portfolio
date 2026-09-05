@@ -269,6 +269,8 @@ function openPage(pageName) {
 
 if (pageName === "projects") {
 
+    loadProjectsSectionSetting();
+
     loadProjects();
 
 }
@@ -944,6 +946,117 @@ const projectsList =
 
 
 // ========================================
+// PROJECT SECTION VISIBILITY
+// ========================================
+
+const projectsSectionToggle =
+    document.getElementById(
+        "projectsSectionToggle"
+    );
+
+
+async function loadProjectsSectionSetting() {
+
+    if (!projectsSectionToggle) return;
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("site_settings")
+        .select("value")
+        .eq(
+            "key",
+            "projects_section_enabled"
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "Projects section setting error:",
+            error
+        );
+
+        return;
+    }
+
+
+    projectsSectionToggle.checked =
+        data?.value === true;
+}
+
+
+async function saveProjectsSectionSetting(
+    enabled
+) {
+
+    if (!projectsSectionToggle) return;
+
+
+    projectsSectionToggle.disabled = true;
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("site_settings")
+        .upsert(
+            {
+                key:
+                    "projects_section_enabled",
+
+                value:
+                    enabled,
+
+                updated_at:
+                    new Date().toISOString()
+            },
+            {
+                onConflict: "key"
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Projects section save error:",
+            error
+        );
+
+        alert(
+            "Could not update Projects section:\n" +
+            error.message
+        );
+
+
+        await loadProjectsSectionSetting();
+
+    }
+
+
+    projectsSectionToggle.disabled = false;
+}
+
+
+if (projectsSectionToggle) {
+
+    projectsSectionToggle.addEventListener(
+        "change",
+        function() {
+
+            saveProjectsSectionSetting(
+                projectsSectionToggle.checked
+            );
+
+        }
+    );
+
+}
+
+// ========================================
 // LOAD PROJECTS
 // ========================================
 
@@ -1036,23 +1149,42 @@ async function loadProjects() {
 
                 <div class="item-actions">
 
-                    <button
-                        type="button"
-                        class="edit-button project-edit-button"
-                        data-id="${project.id}"
-                    >
-                        Edit
-                    </button>
+    <label class="toggle-control project-toggle">
+        <span>
+            ${project.is_enabled
+                ? "Visible"
+                : "Hidden"}
+        </span>
 
-                    <button
-                        type="button"
-                        class="delete-button project-delete-button"
-                        data-id="${project.id}"
-                    >
-                        Delete
-                    </button>
+        <input
+            type="checkbox"
+            class="project-enabled-toggle"
+            data-id="${project.id}"
+            ${project.is_enabled
+                ? "checked"
+                : ""}
+        >
 
-                </div>
+        <span class="toggle-slider"></span>
+    </label>
+
+    <button
+        type="button"
+        class="edit-button project-edit-button"
+        data-id="${project.id}"
+    >
+        Edit
+    </button>
+
+    <button
+        type="button"
+        class="delete-button project-delete-button"
+        data-id="${project.id}"
+    >
+        Delete
+    </button>
+
+</div>
             `;
 
             projectsList.appendChild(item);
@@ -1063,54 +1195,78 @@ async function loadProjects() {
         // EDIT / DELETE EVENTS
         // ========================================
 
-        projectsList.onclick =
-            function(event) {
+       // ========================================
+// EDIT / DELETE / VISIBILITY EVENTS
+// ========================================
 
-                const editButton =
-                    event.target.closest(
-                        ".project-edit-button"
-                    );
+projectsList.onclick = function(event) {
 
-                if (editButton) {
-
-                    editProject(
-                        editButton.dataset.id
-                    );
-
-                    return;
-                }
-
-
-                const deleteButton =
-                    event.target.closest(
-                        ".project-delete-button"
-                    );
-
-                if (deleteButton) {
-
-                    deleteProject(
-                        deleteButton.dataset.id
-                    );
-
-                    return;
-                }
-            };
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected projects error:",
-            error
+    // PROJECT VISIBILITY TOGGLE
+    const visibilityToggle =
+        event.target.closest(
+            ".project-enabled-toggle"
         );
 
-        projectsList.innerHTML = `
-            <div class="empty-admin">
-                <div class="empty-icon">!</div>
-                <h3>Unable to load projects</h3>
-                <p>${escapeHtml(error.message)}</p>
-            </div>
-        `;
+    if (visibilityToggle) {
+
+        toggleProjectVisibility(
+            visibilityToggle.dataset.id,
+            visibilityToggle.checked
+        );
+
+        return;
     }
+
+
+    // EDIT PROJECT
+    const editButton =
+        event.target.closest(
+            ".project-edit-button"
+        );
+
+    if (editButton) {
+
+        editProject(
+            editButton.dataset.id
+        );
+
+        return;
+    }
+
+
+    // DELETE PROJECT
+    const deleteButton =
+        event.target.closest(
+            ".project-delete-button"
+        );
+
+    if (deleteButton) {
+
+        deleteProject(
+            deleteButton.dataset.id
+        );
+
+        return;
+    }
+
+};
+
+
+} catch (error) {
+
+    console.error(
+        "Unexpected projects error:",
+        error
+    );
+
+    projectsList.innerHTML = `
+        <div class="empty-admin">
+            <div class="empty-icon">!</div>
+            <h3>Unable to load projects</h3>
+            <p>${escapeHtml(error.message)}</p>
+        </div>
+    `;
+}
 };
 
 
@@ -1299,6 +1455,34 @@ function openProjectModal(project = null) {
 
 
                     <div class="skill-form-actions">
+
+                    <label>
+    Public Visibility
+</label>
+
+<label class="toggle-control modal-toggle">
+
+    <span>
+        Show this project on the public website
+    </span>
+
+    <input
+        type="checkbox"
+        id="projectEnabled"
+        ${
+            project
+                ? (
+                    project.is_enabled !== false
+                        ? "checked"
+                        : ""
+                  )
+                : "checked"
+        }
+    >
+
+    <span class="toggle-slider"></span>
+
+</label>
 
                         ${
                             project
@@ -1520,23 +1704,31 @@ async function saveProject(id = null) {
     let result;
 
 
-    const projectData = {
+    const isEnabled =
+    document
+        .getElementById("projectEnabled")
+        .checked;
 
-        title: title,
 
-        category: category,
+const projectData = {
 
-        description: description,
+    title: title,
 
-        technologies: technologies,
+    category: category,
 
-        project_url: projectUrl,
+    description: description,
 
-        github_url: githubUrl,
+    technologies: technologies,
 
-        sort_order: sortOrder
+    project_url: projectUrl,
 
-    };
+    github_url: githubUrl,
+
+    sort_order: sortOrder,
+
+    is_enabled: isEnabled
+
+};
 
 
     if (id) {
@@ -2069,6 +2261,15 @@ function openEducationModal(item = null) {
                         }"
                     >
 
+
+<label class="toggle-control modal-toggle">
+
+    <span>
+        Show this project on the public website
+    </span>
+
+    <input
+        type="checkbox"
 
                     <div class="skill-form-actions">
 

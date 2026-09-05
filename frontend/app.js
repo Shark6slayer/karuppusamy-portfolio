@@ -620,6 +620,67 @@ function getProjectVisual(index, title) {
 
 }
 
+/* =========================================================
+   LOAD PROJECT SECTION SETTING
+========================================================= */
+
+async function loadProjectSectionSetting() {
+
+    const projectsSection =
+        document.querySelector("[data-projects-section]");
+
+    const projectsNavLink =
+        document.getElementById("projectsNavLink");
+
+    if (!projectsSection) {
+        return;
+    }
+
+    if (!supabaseClient) {
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("site_settings")
+        .select("value")
+        .eq("key", "projects_section_enabled")
+        .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "Projects section setting error:",
+            error
+        );
+
+        return;
+    }
+
+    const enabled =
+        data?.value === true;
+
+    if (!enabled) {
+
+        projectsSection.style.display = "none";
+
+        if (projectsNavLink) {
+            projectsNavLink.style.display = "none";
+        }
+
+        return;
+    }
+
+    projectsSection.style.display = "";
+
+    if (projectsNavLink) {
+        projectsNavLink.style.display = "";
+    }
+
+    await loadProjects();
+}
 
 /* =========================================================
    LOAD PROJECTS
@@ -646,16 +707,17 @@ async function loadProjects() {
     } = await supabaseClient
         .from("projects")
         .select(`
-            id,
-            title,
-            category,
-            description,
-            technologies,
-            project_url,
-            github_url,
-            image_url,
-            sort_order
-        `)
+    id,
+    title,
+    category,
+    description,
+    technologies,
+    project_url,
+    github_url,
+    image_url,
+    sort_order,
+    is_enabled
+`)
         .order(
             "sort_order",
             { ascending: true }
@@ -876,26 +938,31 @@ async function loadEducation() {
 
 
     const {
-        data,
-        error
-    } = await supabaseClient
-        .from("education")
-        .select(`
-            id,
-            title,
-            institution,
-            period,
-            description,
-            sort_order
-        `)
-        .order(
-            "sort_order",
-            { ascending: true }
-        )
-        .order(
-            "id",
-            { ascending: true }
-        );
+    data,
+    error
+} = await supabaseClient
+    .from("projects")
+    .select(`
+        id,
+        title,
+        category,
+        description,
+        technologies,
+        project_url,
+        github_url,
+        image_url,
+        sort_order,
+        is_enabled
+    `)
+    .eq("is_enabled", true)
+    .order(
+        "sort_order",
+        { ascending: true }
+    )
+    .order(
+        "id",
+        { ascending: true }
+    );
 
 
     if (error) {
