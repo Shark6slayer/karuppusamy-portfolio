@@ -1082,27 +1082,6 @@ if (addProjectButton) {
 }
 
 // ========================================
-// ADD PROJECT
-// ========================================
-
-const addProjectButton =
-    projectsPage.querySelector(".add-button");
-
-if (addProjectButton) {
-
-    addProjectButton.addEventListener(
-        "click",
-        function() {
-
-            openProjectModal();
-
-        }
-    );
-
-}
-
-
-// ========================================
 // PROJECT MODAL
 // ========================================
 
