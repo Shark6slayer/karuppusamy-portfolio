@@ -882,6 +882,7 @@ function escapeAttribute(value) {
 checkSession();
 
 // ========================================
+// ========================================
 // PROJECTS CRUD
 // ========================================
 
@@ -907,19 +908,150 @@ async function loadProjects() {
         </div>
     `;
 
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("projects")
-        .select("*")
-        .order("sort_order", {
-            ascending: true
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("projects")
+            .select("*")
+            .order("sort_order", {
+                ascending: true
+            });
+
+        if (error) {
+            console.error("Projects load error:", error);
+
+            projectsList.innerHTML = `
+                <div class="empty-admin">
+                    <div class="empty-icon">!</div>
+                    <h3>Unable to load projects</h3>
+                    <p>${escapeHtml(error.message)}</p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // ========================================
+        // NO PROJECTS
+        // ========================================
+
+        if (!data || data.length === 0) {
+
+            projectsList.innerHTML = `
+                <div class="empty-admin">
+                    <div class="empty-icon">▣</div>
+                    <h3>No projects yet</h3>
+                    <p>Add your first project.</p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // ========================================
+        // RENDER PROJECTS
+        // ========================================
+
+        projectsList.innerHTML = "";
+
+        data.forEach(function(project, index) {
+
+            const item =
+                document.createElement("div");
+
+            item.className =
+                "admin-list-item";
+
+            item.innerHTML = `
+                <div class="item-icon">
+                    ${String(index + 1).padStart(2, "0")}
+                </div>
+
+                <div class="item-info">
+                    <strong>
+                        ${escapeHtml(project.title)}
+                    </strong>
+
+                    <span>
+                        ${escapeHtml(
+                            project.category || ""
+                        )}
+                    </span>
+                </div>
+
+                <div class="item-actions">
+
+                    <button
+                        type="button"
+                        class="edit-button project-edit-button"
+                        data-id="${project.id}"
+                    >
+                        Edit
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-button project-delete-button"
+                        data-id="${project.id}"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+            `;
+
+            projectsList.appendChild(item);
         });
 
-    if (error) {
 
-        console.error(error);
+        // ========================================
+        // EDIT / DELETE EVENTS
+        // ========================================
+
+        projectsList.onclick =
+            function(event) {
+
+                const editButton =
+                    event.target.closest(
+                        ".project-edit-button"
+                    );
+
+                if (editButton) {
+
+                    editProject(
+                        editButton.dataset.id
+                    );
+
+                    return;
+                }
+
+
+                const deleteButton =
+                    event.target.closest(
+                        ".project-delete-button"
+                    );
+
+                if (deleteButton) {
+
+                    deleteProject(
+                        deleteButton.dataset.id
+                    );
+
+                    return;
+                }
+            };
+
+    } catch (error) {
+
+        console.error(
+            "Unexpected projects error:",
+            error
+        );
 
         projectsList.innerHTML = `
             <div class="empty-admin">
@@ -928,37 +1060,26 @@ async function loadProjects() {
                 <p>${escapeHtml(error.message)}</p>
             </div>
         `;
-
-        return;
-    }
-
-    if (!data || data.length === 0) {
-
-        projectsList.innerHTML = `
-            <div class="empty-admin">
-                <div class="empty-icon">▣</div>
-                <h3>No projects yet</h3>
-                <p>Add your first project.</p>
-            </div>
-        `;
-
-        return;
-    }
-
-    projectsList.onclick = function(event) {
-
-    const button =
-        event.target.closest(
-            ".project-edit-button"
-        );
-
-    if (!button) return;
-
-    editProject(
-        button.dataset.id
-    );
     }
 };
+
+
+// ========================================
+// ADD PROJECT
+// ========================================
+
+const addProjectButton =
+    projectsPage.querySelector(".add-button");
+
+if (addProjectButton) {
+
+    addProjectButton.addEventListener(
+        "click",
+        function() {
+            openProjectModal();
+        }
+    );
+}
 
 // ========================================
 // ADD PROJECT
