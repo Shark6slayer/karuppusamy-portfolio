@@ -612,32 +612,41 @@ function openSkillModal(skill = null) {
 
 
                     <div class="skill-form-actions">
-
+                    ${
+                        skill
+                        ? `
                         <button
-                            type="button"
-                            class="modal-cancel"
-                            id="cancelSkill"
+                        type="button"
+                        class="modal-delete"
+                        id="deleteSkill"
                         >
-                            Cancel
+                        Delete
                         </button>
-
-                        <button
-                            type="button"
-                            class="modal-save"
-                            id="saveSkill"
-                        >
-                            ${skill ? "Save Changes" : "Save Skill"}
-                        </button>
-
-                    </div>
-
+                        `
+                        : ""
+                    }
+                    <button
+                    type="button"
+                    class="modal-cancel"
+                    id="cancelSkill"
+                    >
+                    Cancel
+                    </button>
+                    <button
+                    type="button"
+                    class="modal-save"
+                    id="saveSkill"
+                    >
+                    ${skill ? "Save Changes" : "Save Skill"}
+                    </button>
                 </div>
-
             </div>
 
         </div>
 
-    `;
+    </div>
+
+`;
 
 
     document.body.appendChild(modal);
@@ -671,6 +680,16 @@ function openSkillModal(skill = null) {
 
             }
         );
+        if (skill) {
+    document
+        .getElementById("deleteSkill")
+        .addEventListener(
+            "click",
+            function() {
+                deleteSkill(skill.id);
+            }
+        );
+}
 
 }
 
@@ -849,6 +868,37 @@ async function saveSkill(id = null) {
 
     await loadSkills();
 
+}
+
+async function deleteSkill(id) {
+
+    const confirmed = confirm(
+        "Delete this skill permanently?"
+    );
+
+    if (!confirmed) return;
+
+    const { error } =
+        await supabaseClient
+            .from("skills")
+            .delete()
+            .eq("id", id);
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not delete skill:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    closeSkillModal();
+
+    await loadSkills();
 }
 
 
