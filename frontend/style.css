@@ -3077,3 +3077,484 @@ img {
         animation: none;
     }
 }
+
+/* =========================================================
+   LIGHT MODE — DESKTOP + MOBILE
+   Dark mode remains exactly as the original design
+========================================================= */
+
+@media (prefers-color-scheme: light) {
+
+    :root {
+        /* =========================
+           LIGHT CORE
+        ========================= */
+
+        --bg: #ffffff;
+        --bg-soft: #f8fafc;
+        --bg-lighter: #f1f5f9;
+
+        /* Cards */
+        --card: rgba(255, 255, 255, 0.92);
+        --card-solid: #ffffff;
+
+        /* Text */
+        --text: #111827;
+        --text-soft: #374151;
+        --text-muted: #64748b;
+        --text-dim: #94a3b8;
+
+        /* Blue */
+        --accent: #397dd4;
+        --accent-bright: #2563b5;
+        --accent-dark: #245da0;
+
+        /* Purple */
+        --purple: #7054d4;
+        --purple-bright: #6445c7;
+        --purple-dark: #573bb0;
+
+        /* Medical */
+        --medical: #b77900;
+        --medical-bright: #9a6700;
+        --medical-dark: #8a5d00;
+
+        /* Borders */
+        --border: rgba(15, 23, 42, 0.10);
+        --border-bright: rgba(57, 125, 212, 0.30);
+    }
+
+
+    /* =====================================================
+       BODY
+    ===================================================== */
+
+    body {
+        background:
+            radial-gradient(
+                circle at 85% 5%,
+                rgba(73, 121, 210, 0.07),
+                transparent 25%
+            ),
+            radial-gradient(
+                circle at 5% 45%,
+                rgba(115, 76, 205, 0.045),
+                transparent 25%
+            ),
+            var(--bg);
+
+        color: var(--text);
+    }
+
+
+    /* =====================================================
+       BACKGROUND GRID
+    ===================================================== */
+
+    body::before {
+        background-image:
+            linear-gradient(
+                rgba(15, 23, 42, 0.035) 1px,
+                transparent 1px
+            ),
+            linear-gradient(
+                90deg,
+                rgba(15, 23, 42, 0.035) 1px,
+                transparent 1px
+            );
+
+        opacity: 1;
+    }
+
+
+    /* =====================================================
+       NAVBAR
+    ===================================================== */
+
+    .navbar.scrolled {
+        background: rgba(255, 255, 255, 0.82);
+        border-color: var(--border);
+        backdrop-filter: blur(22px);
+    }
+
+
+    .nav-menu {
+        background: rgba(255, 255, 255, 0.97);
+    }
+
+
+    .nav-linkedin:hover {
+        background: rgba(57, 125, 212, 0.06);
+    }
+
+
+    /* =====================================================
+       HERO
+    ===================================================== */
+
+    .hero-grid {
+        background-image:
+            linear-gradient(
+                rgba(57, 125, 212, 0.035) 1px,
+                transparent 1px
+            ),
+            linear-gradient(
+                90deg,
+                rgba(57, 125, 212, 0.035) 1px,
+                transparent 1px
+            );
+    }
+
+
+    .status-badge {
+        background: rgba(15, 23, 42, 0.025);
+    }
+
+
+    /* =====================================================
+       BUTTONS
+    ===================================================== */
+
+    .btn-primary {
+        background: #111827;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background: var(--accent);
+        color: #ffffff;
+    }
+
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(57, 125, 212, 0.06);
+        border-color: var(--border-bright);
+    }
+
+
+    /* =====================================================
+       HERO ORBITAL SYSTEM
+    ===================================================== */
+
+    .orbit {
+        border-color: rgba(57, 125, 212, 0.16);
+    }
+
+
+    .tech-orb {
+        background:
+            radial-gradient(
+                circle at 35% 30%,
+                rgba(155, 197, 255, 0.32),
+                transparent 35%
+            ),
+            radial-gradient(
+                circle,
+                rgba(70, 110, 180, 0.10),
+                rgba(255, 255, 255, 0.95) 67%
+            );
+
+        border-color: rgba(57, 125, 212, 0.28);
+
+        box-shadow:
+            0 0 90px rgba(57, 125, 212, 0.10),
+            inset 0 0 60px rgba(57, 125, 212, 0.05);
+    }
+
+
+    .orb-core {
+        background: rgba(255, 255, 255, 0.88);
+        border-color: rgba(15, 23, 42, 0.12);
+
+        box-shadow:
+            0 0 35px rgba(57, 125, 212, 0.10);
+    }
+
+
+    .floating-chip {
+        background: rgba(255, 255, 255, 0.90);
+        border-color: var(--border);
+        color: var(--text-soft);
+
+        box-shadow:
+            0 18px 45px rgba(15, 23, 42, 0.10);
+    }
+
+
+    /* =====================================================
+       GLASS CARDS
+    ===================================================== */
+
+    .glass-card {
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.95),
+                rgba(248, 250, 252, 0.88)
+            );
+
+        border-color: var(--border);
+    }
+
+
+    /* =====================================================
+       ABOUT
+    ===================================================== */
+
+    .about-main {
+        background:
+            linear-gradient(
+                135deg,
+                rgba(57, 125, 212, 0.035),
+                rgba(255, 255, 255, 0.95)
+            );
+    }
+
+
+    .mini-card {
+        background: rgba(255, 255, 255, 0.90);
+    }
+
+
+    .mini-card:hover {
+        background: rgba(57, 125, 212, 0.035);
+    }
+
+
+    /* =====================================================
+       SKILLS
+    ===================================================== */
+
+    .skill-card {
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.98),
+                rgba(248, 250, 252, 0.90)
+            );
+    }
+
+
+    .skill-card:hover {
+        background:
+            linear-gradient(
+                145deg,
+                rgba(57, 125, 212, 0.045),
+                rgba(255, 255, 255, 0.98)
+            );
+    }
+
+
+    /* =====================================================
+       PROJECTS
+    ===================================================== */
+
+    .project-notice {
+        background: rgba(255, 255, 255, 0.90);
+    }
+
+
+    .project-card {
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.98),
+                rgba(248, 250, 252, 0.90)
+            );
+    }
+
+
+    /* =====================================================
+       PROJECT VISUALS
+    ===================================================== */
+
+    .project-visual {
+        background:
+            radial-gradient(
+                circle at center,
+                rgba(57, 125, 212, 0.08),
+                transparent 60%
+            ),
+            #f1f5f9;
+    }
+
+
+    .sensor-box {
+        background: rgba(255, 255, 255, 0.94);
+
+        box-shadow:
+            0 20px 55px rgba(15, 23, 42, 0.10);
+    }
+
+
+    /* =====================================================
+       TIMELINE / EDUCATION
+    ===================================================== */
+
+    .timeline-dot {
+        background: #ffffff;
+    }
+
+
+    .timeline-card {
+        background: rgba(255, 255, 255, 0.92);
+    }
+
+
+    /* =====================================================
+       ACADEMIC ROADMAP
+    ===================================================== */
+
+    .academic-roadmap {
+        background:
+            linear-gradient(
+                135deg,
+                rgba(57, 125, 212, 0.035),
+                rgba(112, 84, 212, 0.025),
+                rgba(255, 255, 255, 0.95)
+            );
+    }
+
+
+    .roadmap-step {
+        background: rgba(255, 255, 255, 0.90);
+    }
+
+
+    /* =====================================================
+       MEDICAL / RESIDENCY
+       Gold remains gold
+    ===================================================== */
+
+    .roadmap-medical {
+        background:
+            linear-gradient(
+                145deg,
+                rgba(245, 185, 66, 0.055),
+                rgba(255, 255, 255, 0.95)
+            );
+
+        box-shadow:
+            0 0 45px rgba(245, 185, 66, 0.035);
+    }
+
+
+    .md-residency-card {
+        background:
+            radial-gradient(
+                circle at 85% 15%,
+                rgba(245, 185, 66, 0.075),
+                transparent 35%
+            ),
+            rgba(255, 255, 255, 0.95);
+    }
+
+
+    /* =====================================================
+       CONTACT
+    ===================================================== */
+
+    .contact-card {
+        background:
+            radial-gradient(
+                circle at 90% 20%,
+                rgba(57, 125, 212, 0.08),
+                transparent 35%
+            ),
+            rgba(255, 255, 255, 0.95);
+    }
+
+
+    /* =====================================================
+       FOOTER
+    ===================================================== */
+
+    .footer {
+        border-color: var(--border);
+    }
+
+
+    /* =====================================================
+       LOADER
+    ===================================================== */
+
+    #siteLoader {
+        background:
+            radial-gradient(
+                circle at center,
+                rgba(55, 90, 160, 0.06),
+                transparent 38%
+            ),
+            #ffffff;
+    }
+
+
+    .loader-line {
+        background: rgba(15, 23, 42, 0.08);
+    }
+
+
+    /* =====================================================
+       SELECTION
+    ===================================================== */
+
+    ::selection {
+        background: rgba(57, 125, 212, 0.20);
+        color: #111827;
+    }
+}
+
+
+/* =========================================================
+   MOBILE LIGHT MODE
+   Extra fixes for mobile navigation
+========================================================= */
+
+@media (max-width: 760px) and (prefers-color-scheme: light) {
+
+    .navbar.scrolled {
+        background: rgba(255, 255, 255, 0.94);
+    }
+
+    .nav-menu {
+        background: rgba(255, 255, 255, 0.98);
+        border-color: var(--border);
+
+        box-shadow:
+            0 20px 50px rgba(15, 23, 42, 0.10);
+    }
+
+    .menu-toggle {
+        background: rgba(255, 255, 255, 0.85);
+        border-color: var(--border);
+        color: var(--text);
+    }
+
+    .menu-toggle span {
+        background: var(--text);
+    }
+
+    .project-visual {
+        background:
+            radial-gradient(
+                circle at center,
+                rgba(57, 125, 212, 0.08),
+                transparent 60%
+            ),
+            #f1f5f9;
+    }
+
+    .orb-core {
+        background: rgba(255, 255, 255, 0.92);
+    }
+
+    .floating-chip {
+        background: rgba(255, 255, 255, 0.94);
+    }
+}
