@@ -702,31 +702,31 @@ async function loadProjects() {
 
 
     const {
-        data,
-        error
-    } = await supabaseClient
-        .from("projects")
-        .select(`
-    id,
-    title,
-    category,
-    description,
-    technologies,
-    project_url,
-    github_url,
-    image_url,
-    sort_order,
-    is_enabled
-`)
-.eq("is_enabled", true)
-        .order(
-            "sort_order",
-            { ascending: true }
-        )
-        .order(
-            "id",
-            { ascending: true }
-        );
+    data,
+    error
+} = await supabaseClient
+    .from("projects")
+    .select(`
+        id,
+        title,
+        category,
+        description,
+        technologies,
+        project_url,
+        github_url,
+        image_url,
+        sort_order,
+        is_enabled
+    `)
+    .eq("is_enabled", true)
+    .order(
+        "sort_order",
+        { ascending: true }
+    )
+    .order(
+        "id",
+        { ascending: true }
+    );
 
 
     if (error) {
