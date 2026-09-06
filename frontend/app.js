@@ -718,6 +718,7 @@ async function loadProjects() {
     sort_order,
     is_enabled
 `)
+.eq("is_enabled", true)
         .order(
             "sort_order",
             { ascending: true }
@@ -925,64 +926,48 @@ async function loadEducation() {
         return;
     }
 
-
     const educationTimeline =
-        document.getElementById(
-            "educationTimeline"
-        );
-
+        document.getElementById("educationTimeline");
 
     if (!educationTimeline) {
         return;
     }
 
-
     const {
-    data,
-    error
-} = await supabaseClient
-    .from("projects")
-    .select(`
-        id,
-        title,
-        category,
-        description,
-        technologies,
-        project_url,
-        github_url,
-        image_url,
-        sort_order,
-        is_enabled
-    `)
-    .eq("is_enabled", true)
-    .order(
-        "sort_order",
-        { ascending: true }
-    )
-    .order(
-        "id",
-        { ascending: true }
-    );
-
+        data,
+        error
+    } = await supabaseClient
+        .from("education")
+        .select(`
+            id,
+            title,
+            institution,
+            period,
+            description,
+            sort_order
+        `)
+        .order(
+            "sort_order",
+            { ascending: true }
+        )
+        .order(
+            "id",
+            { ascending: true }
+        );
 
     if (error) {
-
         console.error(
             "Education loading error:",
             error
         );
-
         return;
     }
-
 
     if (!data || data.length === 0) {
         return;
     }
 
-
     educationTimeline.innerHTML = "";
-
 
     data.forEach((education, index) => {
 
@@ -992,26 +977,19 @@ async function loadEducation() {
         item.className =
             "timeline-item reveal visible";
 
-
         const period =
-            education.period ||
-            "EDUCATION";
-
+            education.period || "EDUCATION";
 
         const title =
             education.title || "";
 
-
         const institution =
             education.institution || "";
-
 
         const description =
             education.description || "";
 
-
         item.innerHTML = `
-
             <div class="timeline-dot"></div>
 
             <div class="timeline-year">
@@ -1040,31 +1018,19 @@ async function loadEducation() {
                     description
                         ? `
                             <p class="timeline-location">
-                                ${escapeHTML(
-                                    description
-                                )}
+                                ${escapeHTML(description)}
                             </p>
                           `
                         : ""
                 }
 
             </div>
-
         `;
 
-
         educationTimeline.appendChild(item);
-
     });
 
-
     staggerCards(".timeline-item");
-
-
-    console.log(
-        `✓ ${data.length} education records loaded from Supabase`
-    );
-
 }
 
 
