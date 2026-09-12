@@ -287,8 +287,13 @@ if (pageName === "education") {
 
 }
 
+if (pageName === "resume") {
+
+    initResumeStudio();
+
 }
 
+}
 sidebarLinks.forEach(function(link) {
 
     link.addEventListener(
@@ -2542,5 +2547,1420 @@ async function deleteEducation(id) {
     closeEducationModal();
 
     loadEducation();
+
+}
+
+/* =========================================================
+   RESUME AI STUDIO
+   ========================================================= */
+
+let resumeDocumentType = "ats";
+let resumeStudioInitialized = false;
+
+
+/* ---------------------------------------------------------
+   INITIALIZE RESUME STUDIO
+   --------------------------------------------------------- */
+
+function initResumeStudio() {
+
+    if (resumeStudioInitialized) {
+        return;
+    }
+
+    resumeStudioInitialized = true;
+
+    const typeButtons =
+        document.querySelectorAll(
+            ".resume-type-button"
+        );
+
+    typeButtons.forEach(function(button) {
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                typeButtons.forEach(
+                    function(item) {
+                        item.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+                button.classList.add(
+                    "active"
+                );
+
+                resumeDocumentType =
+                    button.getAttribute(
+                        "data-document-type"
+                    ) || "ats";
+
+            }
+        );
+
+    });
+
+
+    const generateButton =
+        document.getElementById(
+            "generateResumeButton"
+        );
+
+
+    if (generateButton) {
+
+        generateButton.addEventListener(
+            "click",
+            generateAIResume
+        );
+
+    }
+
+
+    const copyButton =
+        document.getElementById(
+            "copyResumeButton"
+        );
+
+
+    if (copyButton) {
+
+        copyButton.addEventListener(
+            "click",
+            copyGeneratedResume
+        );
+
+    }
+
+
+    const printButton =
+        document.getElementById(
+            "printResumeButton"
+        );
+
+
+    if (printButton) {
+
+        printButton.addEventListener(
+            "click",
+            printGeneratedResume
+        );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   GENERATE RESUME
+   --------------------------------------------------------- */
+
+async function generateAIResume() {
+
+    const generateButton =
+        document.getElementById(
+            "generateResumeButton"
+        );
+
+    const status =
+        document.getElementById(
+            "resumeStatus"
+        );
+
+    const errorBox =
+        document.getElementById(
+            "resumeError"
+        );
+
+    const result =
+        document.getElementById(
+            "resumeResult"
+        );
+
+    const targetRole =
+        document.getElementById(
+            "resumeTargetRole"
+        );
+
+    const jobDescription =
+        document.getElementById(
+            "resumeJobDescription"
+        );
+
+    const includePlannedCertifications =
+        document.getElementById(
+            "includePlannedCertifications"
+        );
+
+
+    if (errorBox) {
+
+        errorBox.hidden = true;
+        errorBox.textContent = "";
+
+    }
+
+
+    if (!targetRole) {
+        return;
+    }
+
+
+    const role =
+        targetRole.value.trim();
+
+
+    if (!role) {
+
+        showResumeError(
+            "Please enter a target role."
+        );
+
+        targetRole.focus();
+
+        return;
+
+    }
+
+
+    /* -----------------------------------------------------
+       GET CURRENT SUPABASE SESSION
+       ----------------------------------------------------- */
+
+    const {
+        data: sessionData,
+        error: sessionError
+    } =
+        await supabaseClient.auth.getSession();
+
+
+    if (
+        sessionError ||
+        !sessionData ||
+        !sessionData.session
+    ) {
+
+        showResumeError(
+            "Your admin session has expired. Please log in again."
+        );
+
+        return;
+
+    }
+
+
+    const accessToken =
+        sessionData.session.access_token;
+
+
+    /* -----------------------------------------------------
+       LOADING STATE
+       ----------------------------------------------------- */
+
+    if (generateButton) {
+
+        generateButton.disabled = true;
+
+        generateButton.innerHTML =
+            `
+            <span class="generate-icon">
+                ✦
+            </span>
+
+            <span>
+                Generating...
+            </span>
+
+            <span>
+                ⟳
+            </span>
+            `;
+
+    }
+
+
+    if (status) {
+
+        status.textContent =
+            "Generating";
+
+    }
+
+
+    try {
+
+        /* -------------------------------------------------
+           CALL SECURE BACKEND
+           ------------------------------------------------- */
+
+        const response =
+            await fetch(
+                "/api/generate-resume",
+                {
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            "Bearer " +
+                            accessToken
+
+                    },
+
+                    body: JSON.stringify({
+
+                        type:
+                            resumeDocumentType,
+
+                        targetRole:
+                            role,
+
+                        jobDescription:
+                            jobDescription
+                                ? jobDescription.value.trim()
+                                : "",
+
+                        includePlannedCertifications:
+                            includePlannedCertifications
+                                ? includePlannedCertifications.checked
+                                : false
+
+                    })
+
+                }
+            );
+
+
+        let data = null;
+
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (jsonError) {
+
+            data = null;
+
+        }
+
+
+        if (!response.ok) {
+
+            const message =
+                data &&
+                data.error
+                    ? data.error
+                    : "Resume generation failed.";
+
+            throw new Error(message);
+
+        }
+
+
+        if (!data || !data.resume) {
+
+            throw new Error(
+                "The AI returned an invalid resume response."
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           RENDER RESULT
+           ------------------------------------------------- */
+
+        renderGeneratedResume(
+            data.resume
+        );
+
+
+        if (result) {
+
+            result.hidden = false;
+
+            result.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        }
+
+
+        if (status) {
+
+            status.textContent =
+                "Generated";
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Resume generation error:",
+            error
+        );
+
+
+        showResumeError(
+            error.message ||
+            "Something went wrong while generating the resume."
+        );
+
+
+        if (status) {
+
+            status.textContent =
+                "Error";
+
+        }
+
+    } finally {
+
+        if (generateButton) {
+
+            generateButton.disabled = false;
+
+            generateButton.innerHTML =
+                `
+                <span class="generate-icon">
+                    ✦
+                </span>
+
+                <span>
+                    Generate with AI
+                </span>
+
+                <span>
+                    →
+                </span>
+                `;
+
+        }
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   ERROR
+   --------------------------------------------------------- */
+
+function showResumeError(message) {
+
+    const errorBox =
+        document.getElementById(
+            "resumeError"
+        );
+
+
+    if (!errorBox) {
+
+        alert(message);
+
+        return;
+
+    }
+
+
+    errorBox.textContent =
+        message;
+
+    errorBox.hidden = false;
+
+}
+
+
+/* ---------------------------------------------------------
+   SAFE TEXT HELPER
+   --------------------------------------------------------- */
+
+function resumeText(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+    return String(value);
+
+}
+
+
+/* ---------------------------------------------------------
+   CREATE ELEMENT
+   --------------------------------------------------------- */
+
+function createResumeElement(
+    tag,
+    className,
+    text
+) {
+
+    const element =
+        document.createElement(tag);
+
+
+    if (className) {
+
+        element.className =
+            className;
+
+    }
+
+
+    if (
+        text !== undefined &&
+        text !== null
+    ) {
+
+        element.textContent =
+            resumeText(text);
+
+    }
+
+
+    return element;
+
+}
+
+
+/* ---------------------------------------------------------
+   RENDER GENERATED RESUME
+   --------------------------------------------------------- */
+
+function renderGeneratedResume(
+    resume
+) {
+
+    const preview =
+        document.getElementById(
+            "resumePreview"
+        );
+
+
+    const keywordList =
+        document.getElementById(
+            "resumeKeywordList"
+        );
+
+
+    if (!preview) {
+        return;
+    }
+
+
+    preview.innerHTML = "";
+
+
+    /* -----------------------------------------------------
+       HEADER
+       ----------------------------------------------------- */
+
+    const header =
+        createResumeElement(
+            "header",
+            "generated-resume-header"
+        );
+
+
+    const name =
+        createResumeElement(
+            "h1",
+            "",
+            resume.full_name
+        );
+
+
+    const headline =
+        createResumeElement(
+            "p",
+            "generated-resume-headline",
+            resume.headline
+        );
+
+
+    header.appendChild(name);
+
+
+    if (resume.headline) {
+
+        header.appendChild(
+            headline
+        );
+
+    }
+
+
+    /* -----------------------------------------------------
+       CONTACT
+       ----------------------------------------------------- */
+
+    if (resume.contact) {
+
+        const contact =
+            createResumeElement(
+                "div",
+                "generated-resume-contact"
+            );
+
+
+        const contactItems = [
+
+            resume.contact.email,
+
+            resume.contact.phone,
+
+            resume.contact.location,
+
+            resume.contact.linkedin,
+
+            resume.contact.github,
+
+            resume.contact.portfolio
+
+        ];
+
+
+        contactItems.forEach(
+            function(item) {
+
+                if (!item) {
+                    return;
+                }
+
+
+                const span =
+                    createResumeElement(
+                        "span",
+                        "",
+                        item
+                    );
+
+
+                contact.appendChild(
+                    span
+                );
+
+            }
+        );
+
+
+        if (contact.children.length) {
+
+            header.appendChild(
+                contact
+            );
+
+        }
+
+    }
+
+
+    preview.appendChild(
+        header
+    );
+
+
+    /* -----------------------------------------------------
+       SUMMARY
+       ----------------------------------------------------- */
+
+    appendResumeSection(
+        preview,
+        "Professional Summary",
+        resume.summary
+    );
+
+
+    /* -----------------------------------------------------
+       SKILLS
+       ----------------------------------------------------- */
+
+    if (
+        Array.isArray(
+            resume.skills
+        ) &&
+        resume.skills.length
+    ) {
+
+        const section =
+            createResumeElement(
+                "section",
+                "generated-resume-section"
+            );
+
+
+        section.appendChild(
+            createResumeElement(
+                "h2",
+                "",
+                "Skills"
+            )
+        );
+
+
+        resume.skills.forEach(
+            function(skillGroup) {
+
+                const group =
+                    createResumeElement(
+                        "div",
+                        "generated-skill-group"
+                    );
+
+
+                if (
+                    skillGroup.category
+                ) {
+
+                    group.appendChild(
+                        createResumeElement(
+                            "strong",
+                            "",
+                            skillGroup.category
+                        )
+                    );
+
+                }
+
+
+                if (
+                    Array.isArray(
+                        skillGroup.items
+                    )
+                ) {
+
+                    group.appendChild(
+                        createResumeElement(
+                            "span",
+                            "",
+                            skillGroup.items.join(
+                                ", "
+                            )
+                        )
+                    );
+
+                }
+
+
+                section.appendChild(
+                    group
+                );
+
+            }
+        );
+
+
+        preview.appendChild(
+            section
+        );
+
+    }
+
+
+    /* -----------------------------------------------------
+       EXPERIENCE
+       ----------------------------------------------------- */
+
+    if (
+        Array.isArray(
+            resume.experience
+        ) &&
+        resume.experience.length
+    ) {
+
+        const section =
+            createResumeElement(
+                "section",
+                "generated-resume-section"
+            );
+
+
+        section.appendChild(
+            createResumeElement(
+                "h2",
+                "",
+                "Experience"
+            )
+        );
+
+
+        resume.experience.forEach(
+            function(item) {
+
+                const block =
+                    createResumeElement(
+                        "div",
+                        "generated-resume-item"
+                    );
+
+
+                block.appendChild(
+                    createResumeElement(
+                        "h3",
+                        "",
+                        item.title ||
+                        item.role ||
+                        ""
+                    )
+                );
+
+
+                const company =
+                    item.company ||
+                    item.organization ||
+                    "";
+
+
+                const period =
+                    item.period ||
+                    item.date ||
+                    "";
+
+
+                if (company || period) {
+
+                    block.appendChild(
+                        createResumeElement(
+                            "p",
+                            "generated-meta",
+                            [
+                                company,
+                                period
+                            ]
+                                .filter(Boolean)
+                                .join(" • ")
+                        )
+                    );
+
+                }
+
+
+                if (item.description) {
+
+                    block.appendChild(
+                        createResumeElement(
+                            "p",
+                            "",
+                            item.description
+                        )
+                    );
+
+                }
+
+
+                section.appendChild(
+                    block
+                );
+
+            }
+        );
+
+
+        preview.appendChild(
+            section
+        );
+
+    }
+
+
+    /* -----------------------------------------------------
+       EDUCATION
+       ----------------------------------------------------- */
+
+    appendResumeCollection(
+        preview,
+        "Education",
+        resume.education,
+        function(item) {
+
+            const title =
+                item.degree ||
+                item.title ||
+                "";
+
+
+            const institution =
+                item.institution ||
+                "";
+
+
+            const period =
+                item.period ||
+                "";
+
+
+            const description =
+                item.description ||
+                "";
+
+
+            return {
+                title:
+                    title,
+
+                meta:
+                    [
+                        institution,
+                        period
+                    ]
+                        .filter(Boolean)
+                        .join(" • "),
+
+                description:
+                    description
+
+            };
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       PROJECTS
+       ----------------------------------------------------- */
+
+    appendResumeCollection(
+        preview,
+        "Projects",
+        resume.projects,
+        function(item) {
+
+            const technologies =
+                Array.isArray(
+                    item.technologies
+                )
+                    ? item.technologies.join(
+                        ", "
+                    )
+                    : "";
+
+
+            return {
+
+                title:
+                    item.title || "",
+
+                meta:
+                    technologies,
+
+                description:
+                    item.description || ""
+
+            };
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       CERTIFICATIONS
+       ----------------------------------------------------- */
+
+    appendResumeCollection(
+        preview,
+        "Certifications",
+        resume.certifications,
+        function(item) {
+
+            return {
+
+                title:
+                    item.name || "",
+
+                meta:
+                    [
+                        item.issuer,
+                        item.date
+                    ]
+                        .filter(Boolean)
+                        .join(" • "),
+
+                description:
+                    item.credential_url || ""
+
+            };
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       KEYWORDS
+       ----------------------------------------------------- */
+
+    if (keywordList) {
+
+        keywordList.innerHTML = "";
+
+
+        if (
+            Array.isArray(
+                resume.keywords
+            ) &&
+            resume.keywords.length
+        ) {
+
+            resume.keywords.forEach(
+                function(keyword) {
+
+                    const tag =
+                        createResumeElement(
+                            "span",
+                            "resume-keyword",
+                            keyword
+                        );
+
+
+                    keywordList.appendChild(
+                        tag
+                    );
+
+                }
+            );
+
+        } else {
+
+            keywordList.appendChild(
+                createResumeElement(
+                    "span",
+                    "resume-keyword-empty",
+                    "No targeted keywords returned."
+                )
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   APPEND SIMPLE SECTION
+   --------------------------------------------------------- */
+
+function appendResumeSection(
+    container,
+    title,
+    content
+) {
+
+    if (!content) {
+        return;
+    }
+
+
+    const section =
+        createResumeElement(
+            "section",
+            "generated-resume-section"
+        );
+
+
+    section.appendChild(
+        createResumeElement(
+            "h2",
+            "",
+            title
+        )
+    );
+
+
+    section.appendChild(
+        createResumeElement(
+            "p",
+            "",
+            content
+        )
+    );
+
+
+    container.appendChild(
+        section
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   APPEND COLLECTION
+   --------------------------------------------------------- */
+
+function appendResumeCollection(
+    container,
+    title,
+    items,
+    formatter
+) {
+
+    if (
+        !Array.isArray(items) ||
+        !items.length
+    ) {
+
+        return;
+
+    }
+
+
+    const section =
+        createResumeElement(
+            "section",
+            "generated-resume-section"
+        );
+
+
+    section.appendChild(
+        createResumeElement(
+            "h2",
+            "",
+            title
+        )
+    );
+
+
+    items.forEach(
+        function(item) {
+
+            const formatted =
+                formatter(item);
+
+
+            const block =
+                createResumeElement(
+                    "div",
+                    "generated-resume-item"
+                );
+
+
+            if (formatted.title) {
+
+                block.appendChild(
+                    createResumeElement(
+                        "h3",
+                        "",
+                        formatted.title
+                    )
+                );
+
+            }
+
+
+            if (formatted.meta) {
+
+                block.appendChild(
+                    createResumeElement(
+                        "p",
+                        "generated-meta",
+                        formatted.meta
+                    )
+                );
+
+            }
+
+
+            if (formatted.description) {
+
+                block.appendChild(
+                    createResumeElement(
+                        "p",
+                        "",
+                        formatted.description
+                    )
+                );
+
+            }
+
+
+            section.appendChild(
+                block
+            );
+
+        }
+    );
+
+
+    container.appendChild(
+        section
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   COPY
+   --------------------------------------------------------- */
+
+async function copyGeneratedResume() {
+
+    const preview =
+        document.getElementById(
+            "resumePreview"
+        );
+
+
+    const button =
+        document.getElementById(
+            "copyResumeButton"
+        );
+
+
+    if (!preview) {
+        return;
+    }
+
+
+    const text =
+        preview.innerText.trim();
+
+
+    if (!text) {
+
+        showResumeError(
+            "There is no generated resume to copy."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        await navigator.clipboard.writeText(
+            text
+        );
+
+
+        if (button) {
+
+            const originalText =
+                button.textContent;
+
+
+            button.textContent =
+                "Copied ✓";
+
+
+            setTimeout(
+                function() {
+
+                    button.textContent =
+                        originalText;
+
+                },
+                1800
+            );
+
+        }
+
+    } catch (error) {
+
+        showResumeError(
+            "Could not copy the resume."
+        );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   PRINT / PDF
+   --------------------------------------------------------- */
+
+function printGeneratedResume() {
+
+    const preview =
+        document.getElementById(
+            "resumePreview"
+        );
+
+
+    if (!preview) {
+        return;
+    }
+
+
+    if (!preview.innerText.trim()) {
+
+        showResumeError(
+            "Generate a resume before printing."
+        );
+
+        return;
+
+    }
+
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank"
+        );
+
+
+    if (!printWindow) {
+
+        showResumeError(
+            "Please allow pop-ups to print the resume."
+        );
+
+        return;
+
+    }
+
+
+    printWindow.document.write(
+        `
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+            <title>
+                Resume
+            </title>
+
+            <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1"
+            >
+
+            <style>
+
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    margin: 0;
+                    padding: 40px;
+                    font-family:
+                        Arial,
+                        Helvetica,
+                        sans-serif;
+                    color: #111;
+                    background: #fff;
+                    line-height: 1.55;
+                }
+
+                .generated-resume-header {
+                    border-bottom:
+                        2px solid #111;
+                    padding-bottom: 18px;
+                    margin-bottom: 24px;
+                }
+
+                .generated-resume-header h1 {
+                    margin: 0 0 5px;
+                    font-size: 30px;
+                }
+
+                .generated-resume-headline {
+                    margin: 0 0 10px;
+                    font-size: 16px;
+                }
+
+                .generated-resume-contact {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px 14px;
+                    font-size: 12px;
+                }
+
+                .generated-resume-section {
+                    margin:
+                        0 0 22px;
+                }
+
+                .generated-resume-section h2 {
+                    margin:
+                        0 0 9px;
+                    font-size: 15px;
+                    text-transform: uppercase;
+                    border-bottom:
+                        1px solid #aaa;
+                    padding-bottom: 4px;
+                }
+
+                .generated-resume-section p {
+                    margin: 4px 0;
+                    font-size: 13px;
+                }
+
+                .generated-resume-item {
+                    margin-bottom: 13px;
+                }
+
+                .generated-resume-item h3 {
+                    margin: 0;
+                    font-size: 14px;
+                }
+
+                .generated-meta {
+                    font-size: 12px !important;
+                    font-weight: 600;
+                }
+
+                .generated-skill-group {
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                }
+
+                .generated-skill-group strong {
+                    margin-right: 8px;
+                }
+
+                @page {
+                    size: A4;
+                    margin: 16mm;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            ${preview.innerHTML}
+
+        </body>
+
+        </html>
+        `
+    );
+
+
+    printWindow.document.close();
+
+
+    printWindow.focus();
+
+
+    setTimeout(
+        function() {
+
+            printWindow.print();
+
+        },
+        400
+    );
 
 }

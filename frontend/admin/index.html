@@ -15,7 +15,7 @@
         rel="stylesheet"
     >
 
-    <link rel="stylesheet" href="/admin/style.css">
+    <link rel="stylesheet" href="./style.css">
 
 </head>
 
@@ -842,68 +842,325 @@
             </section>
 
 
-            <!-- RESUME -->
+            <!-- RESUME STUDIO -->
 
-            <section
-                class="admin-page"
-                id="page-resume"
+<section
+    class="admin-page"
+    id="page-resume"
+>
+
+    <div class="content-card resume-studio-card">
+
+        <!-- HEADER -->
+
+        <div class="card-heading">
+
+            <div>
+
+                <p class="header-label">
+                    AI DOCUMENT STUDIO
+                </p>
+
+                <h2>
+                    Resume & CV
+                </h2>
+
+            </div>
+
+            <span
+                class="save-state"
+                id="resumeStatus"
             >
+                Ready
+            </span>
 
-                <div class="content-card">
-
-                    <div class="card-heading">
-
-                        <div>
-
-                            <p class="header-label">
-                                DOCUMENT
-                            </p>
-
-                            <h2>Resume</h2>
-
-                        </div>
-
-                    </div>
+        </div>
 
 
-                    <div class="upload-area">
+        <!-- GENERATOR -->
 
-                        <div class="upload-icon">
-                            ↑
-                        </div>
+        <div class="resume-generator">
 
-                        <h3>
-                            Upload your resume
-                        </h3>
+            <!-- DOCUMENT TYPE -->
 
-                        <p>
-                            PDF format recommended.
-                        </p>
+            <div class="resume-field">
 
-                        <label class="upload-button">
+                <label>
+                    DOCUMENT TYPE
+                </label>
 
-                            Choose PDF
+                <div class="resume-type-grid">
 
-                            <input
-                                type="file"
-                                accept=".pdf"
-                                hidden
-                            >
+                    <button
+                        type="button"
+                        class="resume-type-button active"
+                        data-document-type="ats"
+                        id="atsResumeButton"
+                    >
 
-                        </label>
+                        <span class="resume-type-icon">
+                            ◈
+                        </span>
 
-                    </div>
+                        <span>
+                            <strong>
+                                ATS Resume
+                            </strong>
+
+                            <small>
+                                Optimized for applicant tracking systems
+                            </small>
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="resume-type-button"
+                        data-document-type="cv"
+                        id="cvResumeButton"
+                    >
+
+                        <span class="resume-type-icon">
+                            ◫
+                        </span>
+
+                        <span>
+                            <strong>
+                                Professional CV
+                            </strong>
+
+                            <small>
+                                Detailed academic & professional profile
+                            </small>
+                        </span>
+
+                    </button>
 
                 </div>
 
-            </section>
+            </div>
+
+
+            <!-- TARGET ROLE -->
+
+            <div class="resume-field">
+
+                <label for="resumeTargetRole">
+                    TARGET ROLE
+                </label>
+
+                <input
+                    type="text"
+                    id="resumeTargetRole"
+                    class="resume-input"
+                    placeholder="e.g. Machine Learning Engineer"
+                    autocomplete="off"
+                >
+
+                <small class="resume-field-help">
+                    Tell the AI which role this resume should target.
+                </small>
+
+            </div>
+
+
+            <!-- JOB DESCRIPTION -->
+
+            <div class="resume-field">
+
+                <label for="resumeJobDescription">
+                    JOB DESCRIPTION
+                    <span class="optional-label">
+                        OPTIONAL
+                    </span>
+                </label>
+
+                <textarea
+                    id="resumeJobDescription"
+                    class="resume-textarea"
+                    rows="9"
+                    placeholder="Paste the job description here. The AI will prioritize relevant skills, projects, education and certifications."
+                ></textarea>
+
+                <small class="resume-field-help">
+                    Adding the actual job description gives better keyword targeting.
+                </small>
+
+            </div>
+
+
+            <!-- PLANNED CERTIFICATIONS -->
+
+            <label
+                class="resume-checkbox-control"
+                for="includePlannedCertifications"
+            >
+
+                <input
+                    type="checkbox"
+                    id="includePlannedCertifications"
+                >
+
+                <span class="resume-checkbox"></span>
+
+                <span>
+
+                    <strong>
+                        Include planned certifications
+                    </strong>
+
+                    <small>
+                        Normally future certifications are excluded from completed resumes.
+                    </small>
+
+                </span>
+
+            </label>
+
+
+            <!-- GENERATE -->
+
+            <div class="resume-generator-actions">
+
+                <button
+                    type="button"
+                    class="resume-generate-button"
+                    id="generateResumeButton"
+                >
+
+                    <span class="generate-icon">
+                        ✦
+                    </span>
+
+                    <span>
+                        Generate with AI
+                    </span>
+
+                    <span>
+                        →
+                    </span>
+
+                </button>
+
+            </div>
+
+
+            <!-- ERROR -->
+
+            <div
+                class="resume-error"
+                id="resumeError"
+                hidden
+            ></div>
+
+        </div>
+
+
+        <!-- GENERATED RESULT -->
+
+        <div
+            class="resume-result"
+            id="resumeResult"
+            hidden
+        >
+
+            <div class="resume-result-header">
+
+                <div>
+
+                    <p class="header-label">
+                        AI GENERATED DOCUMENT
+                    </p>
+
+                    <h3>
+                        Preview
+                    </h3>
+
+                </div>
+
+
+                <div class="resume-result-actions">
+
+                    <button
+                        type="button"
+                        class="resume-action-button"
+                        id="copyResumeButton"
+                    >
+                        Copy
+                    </button>
+
+                    <button
+                        type="button"
+                        class="resume-action-button primary"
+                        id="printResumeButton"
+                    >
+                        Print / PDF
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- RESUME PREVIEW -->
+
+            <article
+                class="resume-preview"
+                id="resumePreview"
+            >
+
+                <div class="resume-preview-placeholder">
+
+                    <span>
+                        ✦
+                    </span>
+
+                    <p>
+                        Your generated resume will appear here.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- KEYWORDS -->
+
+            <div class="resume-keywords">
+
+                <div>
+
+                    <p class="header-label">
+                        ATS KEYWORDS
+                    </p>
+
+                    <h3>
+                        Targeted Keywords
+                    </h3>
+
+                </div>
+
+                <div
+                    class="keyword-list"
+                    id="resumeKeywordList"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
         </main>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="/admin/app.js"></script>
+   <script src="./app.js"></script>
 
 </body>
 </html>
