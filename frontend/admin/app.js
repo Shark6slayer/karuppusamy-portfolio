@@ -2815,23 +2815,23 @@ async function generateAIResume() {
 
                     body: JSON.stringify({
 
-                        type:
-                            resumeDocumentType,
+    documentType:
+        resumeDocumentType,
 
-                        targetRole:
-                            role,
+    targetRole:
+        role,
 
-                        jobDescription:
-                            jobDescription
-                                ? jobDescription.value.trim()
-                                : "",
+    jobDescription:
+        jobDescription
+            ? jobDescription.value.trim()
+            : "",
 
-                        includePlannedCertifications:
-                            includePlannedCertifications
-                                ? includePlannedCertifications.checked
-                                : false
+    includePlannedCertifications:
+        includePlannedCertifications
+            ? includePlannedCertifications.checked
+            : false
 
-                    })
+})
 
                 }
             );
@@ -2865,22 +2865,15 @@ async function generateAIResume() {
         }
 
 
-        if (!data || !data.resume) {
+        if (!data || !data.data) {
+    throw new Error(
+        "The AI returned an invalid resume response."
+    );
+}
 
-            throw new Error(
-                "The AI returned an invalid resume response."
-            );
-
-        }
-
-
-        /* -------------------------------------------------
-           RENDER RESULT
-           ------------------------------------------------- */
-
-        renderGeneratedResume(
-            data.resume
-        );
+renderGeneratedResume(
+    data.data
+);
 
 
         if (result) {
