@@ -574,110 +574,7 @@ ${JSON.stringify(portfolioData)}
 `;
 
 
-    const response =
-        await fetch(
-            "https://api.openai.com/v1/responses",
-            {
-
-                method: "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json",
-
-                    "Authorization":
-                        `Bearer ${OPENAI_API_KEY}`
-
-                },
-
-                body: JSON.stringify({
-
-                    model: OPENAI_MODEL,
-
-                    input: [
-
-                        {
-
-                            role: "system",
-
-                            content: [
-
-                                {
-
-                                    type:
-                                        "input_text",
-
-                                    text:
-                                        systemPrompt
-
-                                }
-
-                            ]
-
-                        }
-
-                    ],
-
-                    text: {
-
-                        format: {
-
-                            type:
-                                "json_schema",
-
-                            name:
-                                "resume_document",
-
-                            strict:
-                                true,
-
-                            schema:
-                                resumeSchema
-                        }
-
-                        
-
-                    }
-
-                })
-
-            }
-        );
-
-
-    if (!response.ok) {
-
-    const errorText = await response.text();
-
-    console.error("OPENAI STATUS:", response.status);
-    console.error("OPENAI RESPONSE:", errorText);
-
-    throw new Error(
-        `OpenAI API error ${response.status}: ${errorText}`
-    );
-
-}
-
-
-    const result =
-        await response.json();
-
-
-    /*
-     * Responses API returns the generated
-     * structured text in output.
-     */
-
-    let outputText = "";
-
-
-    if (result.output) {
-
-        for (
-            const item of result.output
-        ) {
-
+    {
             if (
                 item.type ===
                     "message" &&
@@ -719,7 +616,7 @@ ${JSON.stringify(portfolioData)}
 
     return JSON.parse(outputText);
 
-}
+
 
 
 /* =========================================================
@@ -752,7 +649,7 @@ module.exports = async function handler(
         if (
             !SUPABASE_URL ||
             !SUPABASE_PUBLISHABLE_KEY ||
-            !OPENAI_API_KEY
+            !GEMINI_API_KEY
         ) {
 
             return res
