@@ -37,6 +37,10 @@ function jsonResponse(status, data) {
 }
 
 
+/* =========================================================
+   SUPABASE REQUEST
+========================================================= */
+
 async function supabaseRequest(
     table,
     query,
@@ -152,12 +156,14 @@ async function loadPortfolioData(accessToken) {
              * Certificates are optional for now.
              * If the table is empty, [] is returned.
              */
+
             supabaseRequest(
                 "certificates",
                 "select=*"
                     + "&order=id.asc",
                 accessToken
             ).catch(() => [])
+
         ]);
 
 
@@ -454,11 +460,13 @@ const resumeSchema = {
 
 };
 
+
 /* =========================================================
    GEMINI JSON SCHEMA
 ========================================================= */
 
 function toGeminiSchema(schema) {
+
     if (Array.isArray(schema)) {
         return schema.map(toGeminiSchema);
     }
@@ -475,21 +483,33 @@ function toGeminiSchema(schema) {
             continue;
         }
 
-        if (key === "type" && typeof value === "string") {
-            result[key] = value.toUpperCase();
+        if (
+            key === "type" &&
+            typeof value === "string"
+        ) {
+
+            result[key] =
+                value.toUpperCase();
+
         } else {
-            result[key] = toGeminiSchema(value);
+
+            result[key] =
+                toGeminiSchema(value);
+
         }
+
     }
 
     return result;
 }
 
+
 const geminiResumeSchema =
     toGeminiSchema(resumeSchema);
 
+
 /* =========================================================
-   AI GENERATION
+   GEMINI AI GENERATION
 ========================================================= */
 
 async function generateResume(
@@ -544,6 +564,7 @@ Prioritize relevant skills, projects, education and
 certifications for the target role.
 
 For an ATS resume:
+
 - concise
 - keyword optimized
 - recruiter friendly
@@ -553,6 +574,7 @@ For an ATS resume:
 - no unnecessary decorative language
 
 For a CV:
+
 - more detailed
 - comprehensive
 - include relevant project details
@@ -563,88 +585,214 @@ If information does not exist, return an empty string
 or empty array rather than inventing information.
 
 Target role:
+
 ${targetRole}
 
 Job description:
+
 ${jobDescription || "No job description supplied."}
 
 Portfolio data:
+
 ${JSON.stringify(portfolioData)}
 
 `;
 
 
-    {
-            if (
-                item.type ===
-                    "message" &&
-                Array.isArray(item.content)
-            ) {
+    /* =====================================================
+       CALL GEMINI API
+    ===================================================== */
 
-                for (
-                    const content
-                    of item.content
-                ) {
+    const response =
+        await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+            {
+                method: "POST",
 
-                    if (
-                        content.type ===
-                        "output_text"
-                    ) {
+                headers: {
+                    "Content-Type":
+                        "application/json",
 
-                        outputText +=
-                            content.text || "";
+                    "x-goog-api-key":
+                        GEMINI_API_KEY
+                },
+
+                body: JSON.stringify({
+
+                    contents: [
+
+                        {
+                            role: "user",
+
+                            parts: [
+
+                                {
+                                    text:
+                                        systemPrompt
+                                }
+
+                            ]
+
+                        }
+
+                    ],
+
+                    generationConfig: {
+
+                        responseMimeType:
+                            "application/json",
+
+                        responseSchema:
+                            geminiResumeSchema,
+
+                        temperature:
+                            0.2
 
                     }
 
-                }
+                })
 
             }
+
+        );
+
+
+    /* =====================================================
+       GEMINI ERROR HANDLING
+    ===================================================== */
+
+    if (!response.ok) {
+
+        const errorText =
+            await response.text();
+
+
+        let parsedError = null;
+
+
+        try {
+
+            parsedError =
+                JSON.parse(errorText);
+
+        } catch {
+
+            parsedError = null;
+
+        }
+
+
+        const message =
+            parsedError?.error?.message ||
+            errorText;
+
+
+        const error =
+            new Error(
+                `Gemini API error ${response.status}: ${message}`
+            );
+
+
+        error.status =
+            response.status;
+
+
+        error.code =
+            parsedError?.error?.status ||
+            parsedError?.error?.code ||
+            null;
+
+
+        console.error(
+            "GEMINI STATUS:",
+            response.status
+        );
+
+
+        console.error(
+            "GEMINI ERROR:",
+            errorText
+        );
+
+
+        throw error;
+
+    }
+
+
+    /* =====================================================
+       READ GEMINI RESPONSE
+    ===================================================== */
+
+    const result =
+        await response.json();
+
+
+    const parts =
+        result
+            ?.candidates?.[0]
+            ?.content?.parts || [];
+
+
+    let outputText = "";
+
+
+    for (const part of parts) {
+
+        if (part.text) {
+
+            outputText +=
+                part.text;
 
         }
 
     }
 
-const result = await response.json();
 
-const parts =
-    result?.candidates?.[0]?.content?.parts || [];
+    /* =====================================================
+       CHECK EMPTY RESPONSE
+    ===================================================== */
 
-let outputText = "";
+    if (!outputText) {
 
-for (const part of parts) {
-    if (part.text) {
-        outputText += part.text;
+        console.error(
+            "GEMINI EMPTY RESPONSE:",
+            JSON.stringify(result)
+        );
+
+
+        throw new Error(
+            "Gemini returned no generated resume."
+        );
+
     }
+
+
+    /* =====================================================
+       PARSE JSON
+    ===================================================== */
+
+    try {
+
+        return JSON.parse(
+            outputText
+        );
+
+    } catch (error) {
+
+        console.error(
+            "GEMINI INVALID JSON:",
+            outputText
+        );
+
+
+        throw new Error(
+            "Gemini returned invalid resume JSON."
+        );
+
+    }
+
 }
-
-if (!outputText) {
-    console.error(
-        "GEMINI EMPTY RESPONSE:",
-        JSON.stringify(result)
-    );
-
-    throw new Error(
-        "Gemini returned no generated resume."
-    );
-}
-
-try {
-    return JSON.parse(outputText);
-} catch (error) {
-    console.error(
-        "GEMINI INVALID JSON:",
-        outputText
-    );
-
-    throw new Error(
-        "Gemini returned invalid resume JSON."
-    );
-}
-
-
-    return JSON.parse(outputText);
-
-
 
 
 /* =========================================================
@@ -796,13 +944,16 @@ module.exports = async function handler(
                                 )
                                 .toLowerCase();
 
+
                             return (
                                 status !==
-                                "planned" &&
+                                    "planned" &&
+
                                 status !==
-                                "upcoming" &&
+                                    "upcoming" &&
+
                                 status !==
-                                "in_progress"
+                                    "in_progress"
                             );
 
                         }
@@ -826,6 +977,10 @@ module.exports = async function handler(
             );
 
 
+        /* -----------------------------------------
+           SUCCESS
+        ----------------------------------------- */
+
         return res
             .status(200)
             .json({
@@ -835,13 +990,19 @@ module.exports = async function handler(
                 documentType,
 
                 generatedBy:
-                    OPENAI_MODEL,
+                    GEMINI_MODEL,
 
-                data: resume
+                data:
+                    resume
 
             });
 
     }
+
+
+    /* =====================================================
+       ERROR HANDLER
+    ===================================================== */
 
     catch (error) {
 
@@ -851,8 +1012,14 @@ module.exports = async function handler(
         );
 
 
+        const status =
+            Number.isInteger(error.status)
+                ? error.status
+                : 500;
+
+
         return res
-            .status(500)
+            .status(status)
             .json({
 
                 success: false,
@@ -861,7 +1028,10 @@ module.exports = async function handler(
                     "Resume generation failed.",
 
                 message:
-                    error.message
+                    error.message,
+
+                code:
+                    error.code || null
 
             });
 
