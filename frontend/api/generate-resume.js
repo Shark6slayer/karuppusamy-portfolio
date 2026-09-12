@@ -604,14 +604,42 @@ ${JSON.stringify(portfolioData)}
 
     }
 
+const result = await response.json();
 
-    if (!outputText) {
+const parts =
+    result?.candidates?.[0]?.content?.parts || [];
 
-        throw new Error(
-            "OpenAI returned no generated resume."
-        );
+let outputText = "";
 
+for (const part of parts) {
+    if (part.text) {
+        outputText += part.text;
     }
+}
+
+if (!outputText) {
+    console.error(
+        "GEMINI EMPTY RESPONSE:",
+        JSON.stringify(result)
+    );
+
+    throw new Error(
+        "Gemini returned no generated resume."
+    );
+}
+
+try {
+    return JSON.parse(outputText);
+} catch (error) {
+    console.error(
+        "GEMINI INVALID JSON:",
+        outputText
+    );
+
+    throw new Error(
+        "Gemini returned invalid resume JSON."
+    );
+}
 
 
     return JSON.parse(outputText);
