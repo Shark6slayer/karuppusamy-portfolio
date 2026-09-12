@@ -612,14 +612,16 @@ ${JSON.stringify(portfolioData)}
 
     if (!response.ok) {
 
-        const errorText =
-            await response.text();
+    const errorText = await response.text();
 
-        throw new Error(
-            `OpenAI API error: ${errorText}`
-        );
+    console.error("OPENAI STATUS:", response.status);
+    console.error("OPENAI RESPONSE:", errorText);
 
-    }
+    throw new Error(
+        `OpenAI API error ${response.status}: ${errorText}`
+    );
+
+}
 
 
     const result =
