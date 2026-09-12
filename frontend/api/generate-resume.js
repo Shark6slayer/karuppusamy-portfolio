@@ -10,11 +10,13 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
     process.env.SUPABASE_PUBLISHABLE_KEY;
 
-const OPENAI_API_KEY =
-    process.env.OPENAI_API_KEY;
+const GEMINI_API_KEY =
+    process.env.GEMINI_API_KEY ||
+    process.env.Gemini_API_Key_Resume_Generate;
 
-const OPENAI_MODEL =
-    process.env.OPENAI_MODEL || "gpt-5-mini";
+const GEMINI_MODEL =
+    process.env.GEMINI_MODEL ||
+    "gemini-2.5-flash-lite";
 
 
 /* =========================================================
@@ -452,6 +454,39 @@ const resumeSchema = {
 
 };
 
+/* =========================================================
+   GEMINI JSON SCHEMA
+========================================================= */
+
+function toGeminiSchema(schema) {
+    if (Array.isArray(schema)) {
+        return schema.map(toGeminiSchema);
+    }
+
+    if (!schema || typeof schema !== "object") {
+        return schema;
+    }
+
+    const result = {};
+
+    for (const [key, value] of Object.entries(schema)) {
+
+        if (key === "additionalProperties") {
+            continue;
+        }
+
+        if (key === "type" && typeof value === "string") {
+            result[key] = value.toUpperCase();
+        } else {
+            result[key] = toGeminiSchema(value);
+        }
+    }
+
+    return result;
+}
+
+const geminiResumeSchema =
+    toGeminiSchema(resumeSchema);
 
 /* =========================================================
    AI GENERATION
@@ -599,8 +634,9 @@ ${JSON.stringify(portfolioData)}
 
                             schema:
                                 resumeSchema
-
                         }
+
+                        
 
                     }
 
