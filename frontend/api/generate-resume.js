@@ -1,7 +1,13 @@
 /* =========================================================
    KARUPPUSAMY C PORTFOLIO
-   AI RESUME / CV GENERATOR
+   PROFESSIONAL ATS RESUME / CV GENERATOR
    VERCEL SERVERLESS FUNCTION
+   GEMINI AI + SUPABASE
+========================================================= */
+
+
+/* =========================================================
+   ENVIRONMENT VARIABLES
 ========================================================= */
 
 const SUPABASE_URL =
@@ -20,18 +26,24 @@ const GEMINI_MODEL =
 
 
 /* =========================================================
-   HELPERS
+   RESPONSE HELPER
 ========================================================= */
 
 function jsonResponse(status, data) {
 
     return {
         statusCode: status,
+
         headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-store"
+            "Content-Type":
+                "application/json",
+
+            "Cache-Control":
+                "no-store"
         },
-        body: JSON.stringify(data)
+
+        body:
+            JSON.stringify(data)
     };
 
 }
@@ -47,23 +59,24 @@ async function supabaseRequest(
     accessToken
 ) {
 
-    const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/${table}?${query}`,
-        {
-            method: "GET",
+    const response =
+        await fetch(
+            `${SUPABASE_URL}/rest/v1/${table}?${query}`,
+            {
+                method: "GET",
 
-            headers: {
-                "apikey":
-                    SUPABASE_PUBLISHABLE_KEY,
+                headers: {
+                    "apikey":
+                        SUPABASE_PUBLISHABLE_KEY,
 
-                "Authorization":
-                    `Bearer ${accessToken}`,
+                    "Authorization":
+                        `Bearer ${accessToken}`,
 
-                "Content-Type":
-                    "application/json"
+                    "Content-Type":
+                        "application/json"
+                }
             }
-        }
-    );
+        );
 
 
     if (!response.ok) {
@@ -84,15 +97,51 @@ async function supabaseRequest(
 
 
 /* =========================================================
-   AUTHENTICATE SUPABASE USER
+   OPTIONAL SUPABASE REQUEST
+   Missing tables will simply return []
 ========================================================= */
 
-async function verifyUser(accessToken) {
+async function optionalSupabaseRequest(
+    table,
+    query,
+    accessToken
+) {
+
+    try {
+
+        return await supabaseRequest(
+            table,
+            query,
+            accessToken
+        );
+
+    } catch (error) {
+
+        console.warn(
+            `Optional table unavailable: ${table}`
+        );
+
+        return [];
+
+    }
+
+}
+
+
+/* =========================================================
+   VERIFY SUPABASE USER
+========================================================= */
+
+async function verifyUser(
+    accessToken
+) {
 
     const response =
         await fetch(
             `${SUPABASE_URL}/auth/v1/user`,
             {
+                method: "GET",
+
                 headers: {
                     "apikey":
                         SUPABASE_PUBLISHABLE_KEY,
@@ -118,51 +167,240 @@ async function verifyUser(accessToken) {
    LOAD PORTFOLIO DATA
 ========================================================= */
 
-async function loadPortfolioData(accessToken) {
+async function loadPortfolioData(
+    accessToken
+) {
 
     const results =
         await Promise.all([
 
-            supabaseRequest(
+            /* -----------------------------------------
+               PROFILE
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
                 "profile",
                 "select=*"
-                    + "&limit=1",
+                + "&limit=1",
                 accessToken
             ),
 
-            supabaseRequest(
+
+            /* -----------------------------------------
+               EDUCATION
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
                 "education",
                 "select=*"
-                    + "&order=sort_order.asc,id.asc",
+                + "&order=sort_order.asc,id.asc",
                 accessToken
             ),
 
-            supabaseRequest(
+
+            /* -----------------------------------------
+               SKILLS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
                 "skills",
                 "select=*"
-                    + "&order=sort_order.asc,id.asc",
+                + "&order=sort_order.asc,id.asc",
                 accessToken
             ),
 
-            supabaseRequest(
+
+            /* -----------------------------------------
+               PROJECTS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
                 "projects",
                 "select=*"
-                    + "&is_enabled=eq.true"
-                    + "&order=sort_order.asc,id.asc",
+                + "&is_enabled=eq.true"
+                + "&order=sort_order.asc,id.asc",
                 accessToken
             ),
 
-            /*
-             * Certificates are optional for now.
-             * If the table is empty, [] is returned.
-             */
 
-            supabaseRequest(
+            /* -----------------------------------------
+               CERTIFICATES
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
                 "certificates",
                 "select=*"
-                    + "&order=id.asc",
+                + "&order=id.asc",
                 accessToken
-            ).catch(() => [])
+            ),
+
+
+            /* -----------------------------------------
+               PROFESSIONAL EXPERIENCE
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "experience",
+                "select=*"
+                + "&order=sort_order.asc,id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               ACADEMIC EXPERIENCE
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "academic_experience",
+                "select=*"
+                + "&order=sort_order.asc,id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               RESEARCH
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "research",
+                "select=*"
+                + "&order=sort_order.asc,id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               PUBLICATIONS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "publications",
+                "select=*"
+                + "&order=year.desc,id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               PATENTS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "patents",
+                "select=*"
+                + "&order=date.desc,id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               AWARDS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "awards",
+                "select=*"
+                + "&order=year.desc,id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               FELLOWSHIPS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "fellowships",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               TEACHING
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "teaching",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               LEADERSHIP
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "leadership",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               MEMBERSHIPS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "memberships",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               CONFERENCES
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "conferences",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               PRESENTATIONS
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "presentations",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               VOLUNTEER EXPERIENCE
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "volunteer",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            ),
+
+
+            /* -----------------------------------------
+               LANGUAGES
+            ----------------------------------------- */
+
+            optionalSupabaseRequest(
+                "languages",
+                "select=*"
+                + "&order=id.asc",
+                accessToken
+            )
 
         ]);
 
@@ -182,7 +420,49 @@ async function loadPortfolioData(accessToken) {
             results[3] || [],
 
         certificates:
-            results[4] || []
+            results[4] || [],
+
+        experience:
+            results[5] || [],
+
+        academic_experience:
+            results[6] || [],
+
+        research:
+            results[7] || [],
+
+        publications:
+            results[8] || [],
+
+        patents:
+            results[9] || [],
+
+        awards:
+            results[10] || [],
+
+        fellowships:
+            results[11] || [],
+
+        teaching:
+            results[12] || [],
+
+        leadership:
+            results[13] || [],
+
+        memberships:
+            results[14] || [],
+
+        conferences:
+            results[15] || [],
+
+        presentations:
+            results[16] || [],
+
+        volunteer:
+            results[17] || [],
+
+        languages:
+            results[18] || []
 
     };
 
@@ -190,7 +470,7 @@ async function loadPortfolioData(accessToken) {
 
 
 /* =========================================================
-   RESUME JSON SCHEMA
+   RESUME / CV JSON SCHEMA
 ========================================================= */
 
 const resumeSchema = {
@@ -200,6 +480,10 @@ const resumeSchema = {
     additionalProperties: false,
 
     properties: {
+
+        /* -----------------------------------------
+           HEADER
+        ----------------------------------------- */
 
         full_name: {
             type: "string"
@@ -212,6 +496,15 @@ const resumeSchema = {
         summary: {
             type: "string"
         },
+
+        career_objective: {
+            type: "string"
+        },
+
+
+        /* -----------------------------------------
+           CONTACT
+        ----------------------------------------- */
 
         contact: {
 
@@ -243,6 +536,10 @@ const resumeSchema = {
 
                 portfolio: {
                     type: "string"
+                },
+
+                orcid: {
+                    type: "string"
                 }
 
             },
@@ -253,10 +550,325 @@ const resumeSchema = {
                 "location",
                 "linkedin",
                 "github",
-                "portfolio"
+                "portfolio",
+                "orcid"
             ]
 
         },
+
+
+        /* -----------------------------------------
+           PROFESSIONAL EXPERIENCE
+        ----------------------------------------- */
+
+        experience: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    organization: {
+                        type: "string"
+                    },
+
+                    position: {
+                        type: "string"
+                    },
+
+                    location: {
+                        type: "string"
+                    },
+
+                    dates: {
+                        type: "string"
+                    },
+
+                    bullets: {
+
+                        type: "array",
+
+                        items: {
+                            type: "string"
+                        }
+
+                    }
+
+                },
+
+                required: [
+                    "organization",
+                    "position",
+                    "location",
+                    "dates",
+                    "bullets"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           ACADEMIC EXPERIENCE
+        ----------------------------------------- */
+
+        academic_experience: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    institution: {
+                        type: "string"
+                    },
+
+                    position: {
+                        type: "string"
+                    },
+
+                    department: {
+                        type: "string"
+                    },
+
+                    dates: {
+                        type: "string"
+                    },
+
+                    contributions: {
+
+                        type: "array",
+
+                        items: {
+                            type: "string"
+                        }
+
+                    }
+
+                },
+
+                required: [
+                    "institution",
+                    "position",
+                    "department",
+                    "dates",
+                    "contributions"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           EDUCATION
+        ----------------------------------------- */
+
+        education: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    degree: {
+                        type: "string"
+                    },
+
+                    specialization: {
+                        type: "string"
+                    },
+
+                    institution: {
+                        type: "string"
+                    },
+
+                    location: {
+                        type: "string"
+                    },
+
+                    period: {
+                        type: "string"
+                    },
+
+                    grade: {
+                        type: "string"
+                    },
+
+                    thesis: {
+                        type: "string"
+                    },
+
+                    description: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "degree",
+                    "specialization",
+                    "institution",
+                    "location",
+                    "period",
+                    "grade",
+                    "thesis",
+                    "description"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           RESEARCH
+        ----------------------------------------- */
+
+        research: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    title: {
+                        type: "string"
+                    },
+
+                    role: {
+                        type: "string"
+                    },
+
+                    interests: {
+
+                        type: "array",
+
+                        items: {
+                            type: "string"
+                        }
+
+                    },
+
+                    methodology: {
+                        type: "string"
+                    },
+
+                    outcomes: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "title",
+                    "role",
+                    "interests",
+                    "methodology",
+                    "outcomes"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           PROJECTS
+        ----------------------------------------- */
+
+        projects: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    title: {
+                        type: "string"
+                    },
+
+                    role: {
+                        type: "string"
+                    },
+
+                    category: {
+                        type: "string"
+                    },
+
+                    technologies: {
+
+                        type: "array",
+
+                        items: {
+                            type: "string"
+                        }
+
+                    },
+
+                    description: {
+                        type: "string"
+                    },
+
+                    outcome: {
+                        type: "string"
+                    },
+
+                    project_url: {
+                        type: "string"
+                    },
+
+                    github_url: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "title",
+                    "role",
+                    "category",
+                    "technologies",
+                    "description",
+                    "outcome",
+                    "project_url",
+                    "github_url"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           SKILLS
+        ----------------------------------------- */
 
         skills: {
 
@@ -295,103 +907,10 @@ const resumeSchema = {
 
         },
 
-        education: {
 
-            type: "array",
-
-            items: {
-
-                type: "object",
-
-                additionalProperties: false,
-
-                properties: {
-
-                    degree: {
-                        type: "string"
-                    },
-
-                    institution: {
-                        type: "string"
-                    },
-
-                    period: {
-                        type: "string"
-                    },
-
-                    description: {
-                        type: "string"
-                    }
-
-                },
-
-                required: [
-                    "degree",
-                    "institution",
-                    "period",
-                    "description"
-                ]
-
-            }
-
-        },
-
-        projects: {
-
-            type: "array",
-
-            items: {
-
-                type: "object",
-
-                additionalProperties: false,
-
-                properties: {
-
-                    title: {
-                        type: "string"
-                    },
-
-                    category: {
-                        type: "string"
-                    },
-
-                    description: {
-                        type: "string"
-                    },
-
-                    technologies: {
-
-                        type: "array",
-
-                        items: {
-                            type: "string"
-                        }
-
-                    },
-
-                    project_url: {
-                        type: "string"
-                    },
-
-                    github_url: {
-                        type: "string"
-                    }
-
-                },
-
-                required: [
-                    "title",
-                    "category",
-                    "description",
-                    "technologies",
-                    "project_url",
-                    "github_url"
-                ]
-
-            }
-
-        },
+        /* -----------------------------------------
+           CERTIFICATIONS
+        ----------------------------------------- */
 
         certifications: {
 
@@ -434,6 +953,553 @@ const resumeSchema = {
 
         },
 
+
+        /* -----------------------------------------
+           PUBLICATIONS
+        ----------------------------------------- */
+
+        publications: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    title: {
+                        type: "string"
+                    },
+
+                    authors: {
+                        type: "string"
+                    },
+
+                    venue: {
+                        type: "string"
+                    },
+
+                    year: {
+                        type: "string"
+                    },
+
+                    doi: {
+                        type: "string"
+                    },
+
+                    url: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "title",
+                    "authors",
+                    "venue",
+                    "year",
+                    "doi",
+                    "url"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           PATENTS
+        ----------------------------------------- */
+
+        patents: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    title: {
+                        type: "string"
+                    },
+
+                    patent_number: {
+                        type: "string"
+                    },
+
+                    status: {
+                        type: "string"
+                    },
+
+                    date: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "title",
+                    "patent_number",
+                    "status",
+                    "date"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           AWARDS
+        ----------------------------------------- */
+
+        awards: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    award: {
+                        type: "string"
+                    },
+
+                    organization: {
+                        type: "string"
+                    },
+
+                    year: {
+                        type: "string"
+                    },
+
+                    achievement: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "award",
+                    "organization",
+                    "year",
+                    "achievement"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           FELLOWSHIPS
+        ----------------------------------------- */
+
+        fellowships: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    fellowship: {
+                        type: "string"
+                    },
+
+                    institution: {
+                        type: "string"
+                    },
+
+                    duration: {
+                        type: "string"
+                    },
+
+                    selection: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "fellowship",
+                    "institution",
+                    "duration",
+                    "selection"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           TEACHING
+        ----------------------------------------- */
+
+        teaching: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    course: {
+                        type: "string"
+                    },
+
+                    institution: {
+                        type: "string"
+                    },
+
+                    role: {
+                        type: "string"
+                    },
+
+                    duration: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "course",
+                    "institution",
+                    "role",
+                    "duration"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           LEADERSHIP
+        ----------------------------------------- */
+
+        leadership: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    position: {
+                        type: "string"
+                    },
+
+                    organization: {
+                        type: "string"
+                    },
+
+                    period: {
+                        type: "string"
+                    },
+
+                    impact: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "position",
+                    "organization",
+                    "period",
+                    "impact"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           MEMBERSHIPS
+        ----------------------------------------- */
+
+        memberships: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    organization: {
+                        type: "string"
+                    },
+
+                    membership: {
+                        type: "string"
+                    },
+
+                    since: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "organization",
+                    "membership",
+                    "since"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           CONFERENCES
+        ----------------------------------------- */
+
+        conferences: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    conference: {
+                        type: "string"
+                    },
+
+                    role: {
+                        type: "string"
+                    },
+
+                    location: {
+                        type: "string"
+                    },
+
+                    date: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "conference",
+                    "role",
+                    "location",
+                    "date"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           PRESENTATIONS
+        ----------------------------------------- */
+
+        presentations: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    title: {
+                        type: "string"
+                    },
+
+                    venue: {
+                        type: "string"
+                    },
+
+                    date: {
+                        type: "string"
+                    },
+
+                    type: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "title",
+                    "venue",
+                    "date",
+                    "type"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           VOLUNTEER
+        ----------------------------------------- */
+
+        volunteer: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    organization: {
+                        type: "string"
+                    },
+
+                    role: {
+                        type: "string"
+                    },
+
+                    contribution: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "organization",
+                    "role",
+                    "contribution"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           LANGUAGES
+        ----------------------------------------- */
+
+        languages: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    language: {
+                        type: "string"
+                    },
+
+                    proficiency: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "language",
+                    "proficiency"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           REFERENCES
+        ----------------------------------------- */
+
+        references: {
+
+            type: "array",
+
+            items: {
+
+                type: "object",
+
+                additionalProperties: false,
+
+                properties: {
+
+                    name: {
+                        type: "string"
+                    },
+
+                    designation: {
+                        type: "string"
+                    },
+
+                    institution: {
+                        type: "string"
+                    },
+
+                    contact: {
+                        type: "string"
+                    }
+
+                },
+
+                required: [
+                    "name",
+                    "designation",
+                    "institution",
+                    "contact"
+                ]
+
+            }
+
+        },
+
+
+        /* -----------------------------------------
+           ATS KEYWORDS
+        ----------------------------------------- */
+
         keywords: {
 
             type: "array",
@@ -447,41 +1513,114 @@ const resumeSchema = {
     },
 
     required: [
+
         "full_name",
+
         "headline",
+
         "summary",
+
+        "career_objective",
+
         "contact",
-        "skills",
+
+        "experience",
+
+        "academic_experience",
+
         "education",
+
+        "research",
+
         "projects",
+
+        "skills",
+
         "certifications",
+
+        "publications",
+
+        "patents",
+
+        "awards",
+
+        "fellowships",
+
+        "teaching",
+
+        "leadership",
+
+        "memberships",
+
+        "conferences",
+
+        "presentations",
+
+        "volunteer",
+
+        "languages",
+
+        "references",
+
         "keywords"
+
     ]
 
 };
 
 
 /* =========================================================
-   GEMINI JSON SCHEMA
+   CONVERT JSON SCHEMA FOR GEMINI
 ========================================================= */
 
 function toGeminiSchema(schema) {
 
     if (Array.isArray(schema)) {
-        return schema.map(toGeminiSchema);
+
+        return schema.map(
+            toGeminiSchema
+        );
+
     }
 
-    if (!schema || typeof schema !== "object") {
+
+    if (
+        !schema ||
+        typeof schema !== "object"
+    ) {
+
         return schema;
+
     }
+
 
     const result = {};
 
-    for (const [key, value] of Object.entries(schema)) {
 
-        if (key === "additionalProperties") {
+    for (
+        const [key, value]
+        of Object.entries(schema)
+    ) {
+
+        /*
+         * Gemini structured output does not
+         * need additionalProperties.
+         */
+
+        if (
+            key ===
+            "additionalProperties"
+        ) {
+
             continue;
+
         }
+
+
+        /*
+         * Gemini uses uppercase
+         * schema types.
+         */
 
         if (
             key === "type" &&
@@ -500,16 +1639,638 @@ function toGeminiSchema(schema) {
 
     }
 
+
     return result;
+
 }
 
 
 const geminiResumeSchema =
-    toGeminiSchema(resumeSchema);
+    toGeminiSchema(
+        resumeSchema
+    );
 
 
 /* =========================================================
-   GEMINI AI GENERATION
+   BUILD ATS RESUME INSTRUCTIONS
+========================================================= */
+
+function buildATSInstructions() {
+
+    return `
+
+=========================================================
+ATS RESUME MODE
+=========================================================
+
+Generate a professional ATS-friendly resume.
+
+PRIMARY OBJECTIVE:
+
+Create a highly targeted, recruiter-friendly resume
+optimized for the requested target role.
+
+PAGE PHILOSOPHY:
+
+- 1 page preferred.
+- 2 pages only when the candidate has sufficient
+  relevant professional experience.
+- Do not artificially fill empty space.
+- Do not remove important relevant experience merely
+  to force a page count.
+
+SECTION ORDER:
+
+1. Name & Contact
+2. Professional Summary
+3. Professional Experience
+4. Projects
+5. Education
+6. Technical Skills
+7. Certifications
+8. Achievements
+9. Research / Publications
+10. Leadership
+11. Volunteer Experience
+12. Languages
+
+Only include sections containing meaningful information.
+
+Do NOT create empty sections.
+
+CONTENT PRIORITY:
+
+1. Relevant professional experience
+2. Relevant projects
+3. Relevant technical skills
+4. Education
+5. Certifications
+6. Achievements
+7. Research/publications
+8. Leadership
+9. Volunteer experience
+10. Languages
+
+PROFESSIONAL SUMMARY:
+
+Write approximately 2–4 lines.
+
+The summary should communicate:
+
+- Current professional/academic position
+- Core specialization
+- Strongest relevant capability
+- Relevant practical experience
+- Target-role alignment
+
+Avoid generic phrases such as:
+
+"I am passionate about..."
+"I am interested in..."
+"I have good knowledge..."
+"I want to..."
+"Highly motivated individual..."
+
+PROJECTS:
+
+Select the strongest 2–4 relevant projects.
+
+Prioritize projects related to the target role.
+
+Each project should communicate:
+
+- What was built
+- Technical approach
+- Technologies
+- Purpose/problem
+- Outcome when factually available
+
+Use concise action-oriented writing.
+
+Do not invent metrics.
+
+EXPERIENCE:
+
+For significant roles use approximately 3–5 bullets.
+
+Each bullet should ideally follow:
+
+ACTION + TASK + TECHNOLOGY + RESULT
+
+Only include metrics when they genuinely exist
+in the source data.
+
+SKILLS:
+
+Categorize skills logically.
+
+Examples:
+
+Programming
+Machine Learning
+Artificial Intelligence
+Deep Learning
+Data Science
+Frameworks & Libraries
+Databases
+Cloud
+Hardware & Embedded Systems
+VLSI
+Tools
+Other Technical Skills
+
+Do not duplicate skills unnecessarily.
+
+ATS RULES:
+
+Do not use:
+
+- tables
+- multi-column layouts
+- graphics
+- images
+- skill bars
+- rating stars
+- text boxes
+- decorative icons as replacements for text
+- excessive symbols
+- unnecessary personal information
+
+Use standard professional terminology.
+
+JOB DESCRIPTION:
+
+Naturally prioritize keywords from the job description
+when they are supported by the candidate's actual data.
+
+NEVER add a technology or skill merely because it appears
+in the job description.
+
+=========================================================
+`;
+
+}
+
+
+/* =========================================================
+   BUILD CV INSTRUCTIONS
+========================================================= */
+
+function buildCVInstructions() {
+
+    return `
+
+=========================================================
+PROFESSIONAL CV MODE
+=========================================================
+
+Generate a comprehensive professional/academic CV.
+
+PRIMARY OBJECTIVE:
+
+Present the candidate's complete relevant professional,
+academic, technical and research profile.
+
+PAGE PHILOSOPHY:
+
+- No strict page limit.
+- Commonly 2–5+ pages depending on the candidate.
+- Do not artificially shorten a genuinely substantial CV.
+- Do not add content merely to increase page count.
+
+SECTION ORDER:
+
+1. Name & Contact
+2. Professional Profile
+3. Professional Experience
+4. Academic Experience
+5. Education
+6. Research
+7. Publications
+8. Patents
+9. Projects
+10. Technical Skills
+11. Certifications
+12. Awards & Honors
+13. Fellowships
+14. Teaching
+15. Leadership
+16. Professional Memberships
+17. Conferences
+18. Presentations
+19. Volunteer Experience
+20. Languages
+21. References
+
+Only include sections that contain actual information.
+
+Do NOT create empty sections.
+
+PROFESSIONAL PROFILE:
+
+Write approximately 3–5 lines.
+
+Clearly communicate:
+
+- Career focus
+- Major areas of expertise
+- Professional specialization
+- Strongest capabilities
+- Research or technical interests where relevant
+
+CAREER OBJECTIVE:
+
+Optional.
+
+Use mainly when the candidate is a student,
+fresher or early-career candidate.
+
+Do not use it when an established professional
+profile makes the objective redundant.
+
+PROFESSIONAL EXPERIENCE:
+
+Present complete relevant experience.
+
+For each position include:
+
+- Organization
+- Position
+- Location
+- Dates
+- Responsibilities
+- Achievements
+- Career progression where supported
+
+ACADEMIC EXPERIENCE:
+
+Include:
+
+- Institution
+- Position
+- Department
+- Duration
+- Teaching
+- Research
+- Academic administration
+- Contributions
+
+Only when supported by the portfolio.
+
+EDUCATION:
+
+Include:
+
+- Degree
+- Specialization
+- Institution
+- Location
+- Dates
+- GPA/CGPA when available and relevant
+- Thesis when relevant
+
+RESEARCH:
+
+Include:
+
+- Research interests
+- Research projects
+- Role
+- Methodology
+- Findings
+- Impact/outcomes
+
+PUBLICATIONS:
+
+Preserve professional citation information.
+
+Include:
+
+- Authors
+- Title
+- Journal/conference
+- Year
+- DOI
+- URL
+
+PATENTS:
+
+Include:
+
+- Patent title
+- Patent number
+- Status
+- Filing/grant date
+
+PROJECTS:
+
+Provide more detail than an ATS resume.
+
+Include:
+
+- Project name
+- Role
+- Technologies
+- Description
+- Technical approach
+- Outcome/impact
+
+TECHNICAL SKILLS:
+
+Organize into professional categories.
+
+CERTIFICATIONS:
+
+Include:
+
+- Official certification name
+- Issuer
+- Completion date
+- Credential/link where available
+
+AWARDS:
+
+Include:
+
+- Award
+- Organization
+- Year
+- Achievement
+
+FELLOWSHIPS:
+
+Include only factual fellowship information.
+
+TEACHING:
+
+Include teaching roles and courses when available.
+
+LEADERSHIP:
+
+Include:
+
+- Position
+- Organization
+- Period
+- Major contribution/impact
+
+PROFESSIONAL MEMBERSHIPS:
+
+Include organization,
+membership type and year when available.
+
+CONFERENCES:
+
+Distinguish:
+
+- Speaker
+- Presenter
+- Attendee
+
+Do not claim speaker/presenter status unless supported.
+
+PRESENTATIONS:
+
+Include:
+
+- Presentation title
+- Venue
+- Date
+- Oral/poster/keynote type
+
+VOLUNTEER EXPERIENCE:
+
+Include actual contribution and impact.
+
+LANGUAGES:
+
+Use simple professional text.
+
+Examples:
+
+English — Professional
+Tamil — Native
+Hindi — Conversational
+
+REFERENCES:
+
+Only include actual referee information.
+
+If references are not provided,
+return an empty array.
+
+Do NOT invent referees.
+
+=========================================================
+`;
+
+}
+
+
+/* =========================================================
+   UNIVERSAL FACTUAL RULES
+========================================================= */
+
+function buildUniversalInstructions() {
+
+    return `
+
+=========================================================
+ABSOLUTE FACTUAL ACCURACY
+=========================================================
+
+Use ONLY information contained in the portfolio data.
+
+You may rewrite information professionally.
+
+You may reorganize information.
+
+You may improve grammar.
+
+You may improve sentence structure.
+
+You may prioritize relevant information.
+
+BUT YOU MUST NEVER INVENT:
+
+- employment
+- internships
+- organizations
+- job titles
+- degrees
+- institutions
+- grades
+- CGPA
+- GPA
+- technologies
+- programming languages
+- frameworks
+- tools
+- projects
+- research
+- publications
+- patents
+- awards
+- certifications
+- achievements
+- responsibilities
+- dates
+- locations
+- metrics
+- percentages
+- financial values
+- user counts
+- performance improvements
+- rankings
+- links
+- credentials
+- memberships
+- conferences
+- presentations
+- teaching experience
+
+NEVER fabricate quantitative results.
+
+If a metric is not provided,
+do not create one.
+
+If a section has no factual information,
+return an empty array or empty string.
+
+=========================================================
+WRITING STYLE
+=========================================================
+
+Use:
+
+- professional language
+- active voice
+- concise sentences
+- industry-standard terminology
+- action-oriented verbs
+- evidence-based statements
+
+Prefer:
+
+Developed
+Engineered
+Designed
+Implemented
+Built
+Integrated
+Optimized
+Analyzed
+Applied
+Evaluated
+Configured
+Automated
+Led
+Coordinated
+Researching
+Investigated
+
+Avoid:
+
+"I am..."
+"I have..."
+"I want..."
+"I learned..."
+"I am interested in..."
+"I am passionate about..."
+"Good knowledge..."
+"Basic knowledge..."
+"Worked on..."
+"Familiar with..."
+
+Avoid first-person language.
+
+=========================================================
+METRICS
+=========================================================
+
+Use metrics ONLY when present in the source data.
+
+Valid examples include:
+
+- percentages
+- revenue
+- cost
+- users
+- scale
+- time
+- speed
+- throughput
+- accuracy
+- rankings
+
+Never estimate.
+
+Never infer a metric.
+
+Never create a metric.
+
+=========================================================
+JOB DESCRIPTION ALIGNMENT
+=========================================================
+
+When a job description is supplied:
+
+1. Identify relevant keywords.
+2. Compare them against actual portfolio data.
+3. Prioritize matching skills and projects.
+4. Use professional industry terminology.
+5. Do not keyword stuff.
+6. Never claim experience that does not exist.
+
+=========================================================
+NO AI-GENERATED FLUFF
+=========================================================
+
+Do not use generic statements such as:
+
+"Results-driven professional"
+"Passionate technology enthusiast"
+"Highly motivated individual"
+"Dynamic professional"
+"Hardworking team player"
+
+unless the phrase is genuinely supported
+and useful.
+
+Prefer concrete evidence over adjectives.
+
+=========================================================
+FINAL QUALITY CONTROL
+=========================================================
+
+Before returning the JSON, verify:
+
+1. Every factual claim is supported.
+2. No technologies were invented.
+3. No metrics were invented.
+4. No organizations were invented.
+5. No experience was invented.
+6. Dates remain accurate.
+7. Contact information remains accurate.
+8. Summary matches target role.
+9. Skills are relevant.
+10. Projects are professionally written.
+11. Sections are ordered correctly.
+12. Empty sections contain empty arrays.
+13. Language is professional.
+14. Grammar is correct.
+15. No unnecessary repetition exists.
+16. No ATS-hostile structures are requested.
+17. Output matches the provided JSON schema.
+
+=========================================================
+`;
+
+}
+
+
+/* =========================================================
+   GENERATE RESUME / CV
 ========================================================= */
 
 async function generateResume(
@@ -519,8 +2280,8 @@ async function generateResume(
 
     const documentType =
         options.documentType === "cv"
-            ? "CV"
-            : "ATS resume";
+            ? "cv"
+            : "ats";
 
 
     const targetRole =
@@ -533,401 +2294,136 @@ async function generateResume(
         "";
 
 
+    const includePlannedCertifications =
+        options.includePlannedCertifications === true;
+
+
+    const modeInstructions =
+        documentType === "cv"
+            ? buildCVInstructions()
+            : buildATSInstructions();
+
+
+    const universalInstructions =
+        buildUniversalInstructions();
+
+
     const systemPrompt = `
 
-You are an elite professional resume writer and ATS optimization specialist.
+You are an elite professional resume and CV writer,
+ATS optimization specialist, academic CV editor,
+and executive-level career document strategist.
 
-Your task is to transform the candidate's portfolio data into a highly professional, recruiter-ready ${documentType}.
+You are generating a ${documentType === "cv"
+        ? "Professional CV"
+        : "ATS Resume"}.
 
-The final document must look and read like a resume prepared for competitive roles at companies such as Google, Microsoft, Amazon, NVIDIA, Apple, Meta, Tesla, semiconductor companies, consulting firms, financial institutions, and other top-tier organizations.
-
-TARGET ROLE:
+Target Role:
 ${targetRole}
 
-JOB DESCRIPTION:
+Job Description:
 ${jobDescription || "No job description supplied."}
 
-=========================================================
-CORE OBJECTIVE
-=========================================================
+Planned Certifications:
+${includePlannedCertifications
+        ? "May be included when clearly identified as planned/upcoming."
+        : "Do not include planned/upcoming certifications."}
 
-Create a highly polished, professional and ATS-optimized resume.
+${modeInstructions}
 
-The resume must:
-
-- Be concise but information-dense.
-- Use professional industry-standard terminology.
-- Prioritize information relevant to the target role.
-- Highlight technical depth and practical work.
-- Use strong action-oriented language.
-- Remove weak, generic and repetitive wording.
-- Make the candidate's capabilities immediately clear.
-- Be easy for recruiters and ATS systems to scan.
-- Maintain a clean professional hierarchy.
-- Never sound like an AI-generated generic resume.
+${universalInstructions}
 
 =========================================================
-ABSOLUTE FACTUAL ACCURACY
+PORTFOLIO DATA
 =========================================================
 
-Use ONLY information contained in the supplied portfolio data.
-
-NEVER invent:
-
-- employment
-- companies
-- internships
-- job titles
-- degrees
-- institutions
-- grades
-- certifications
-- awards
-- achievements
-- project results
-- performance improvements
-- percentages
-- rankings
-- technologies
-- programming languages
-- frameworks
-- tools
-- responsibilities
-- dates
-- locations
-- links
-- publications
-
-NEVER fabricate metrics.
-
-If the portfolio does not contain a metric, do not create one.
-
-Instead of inventing a result, describe the actual technical work performed.
-
-You may professionally rewrite existing information.
+${JSON.stringify(
+    portfolioData,
+    null,
+    2
+)}
 
 =========================================================
-PROFESSIONAL WRITING STYLE
+OUTPUT
 =========================================================
 
-Use language appropriate for a high-quality professional resume.
+Return ONLY valid JSON matching the supplied schema.
 
-Prefer:
+Do not return Markdown.
 
-"Developed"
-"Engineered"
-"Designed"
-"Implemented"
-"Built"
-"Integrated"
-"Optimized"
-"Analyzed"
-"Developed and implemented"
-"Designed and developed"
-"Applied"
-"Evaluated"
-"Configured"
-"Automated"
+Do not return explanations.
 
-Avoid weak phrases such as:
+Do not return code fences.
 
-"I am interested in"
-"I have knowledge of"
-"I am passionate about"
-"I want to"
-"I learned"
-"Worked on"
-"Good knowledge"
-"Basic knowledge"
-"Familiar with"
-
-Do not use first-person pronouns.
-
-Do not write conversational sentences.
-
-=========================================================
-PROFESSIONAL SUMMARY
-=========================================================
-
-Write a strong 3-4 sentence professional summary.
-
-The summary must:
-
-1. Identify the candidate's current professional/academic position.
-2. Highlight the strongest relevant technical domains.
-3. Mention the most relevant practical project experience.
-4. Align naturally with the target role.
-
-The summary should immediately communicate:
-
-WHO the candidate is
-WHAT they specialize in
-WHAT they have built/done
-WHAT role they are targeting
-
-Do not use generic motivational statements.
-
-=========================================================
-HEADLINE
-=========================================================
-
-Create a professional role-focused headline.
-
-Example style:
-
-"Machine Learning Engineer | AI & Deep Learning | VLSI & FPGA"
-
-or
-
-"Electronics & Communication Engineering Student | Machine Learning | FPGA & AI"
-
-Choose terminology based strictly on the candidate's actual portfolio.
-
-=========================================================
-SKILLS
-=========================================================
-
-Organize skills into logical professional categories.
-
-Examples:
-
-Programming
-Machine Learning
-Artificial Intelligence
-Deep Learning
-Data Science
-Frameworks & Libraries
-Hardware & Embedded Systems
-VLSI
-Tools & Technologies
-Domains
-
-Only include technologies actually present in the portfolio.
-
-Prioritize skills relevant to the target role.
-
-Do not duplicate the same skill across categories.
-
-=========================================================
-PROJECTS
-=========================================================
-
-Projects are extremely important.
-
-Rewrite every relevant project using concise, professional, action-oriented descriptions.
-
-Each project description should communicate:
-
-- What was built
-- What technical approach was used
-- What technologies were involved
-- What problem the project addressed
-
-Use bullet-style sentences.
-
-Each bullet should begin with a strong action verb.
-
-Example:
-
-"Developed a VLSI-accelerated AI-based RF classification system using FPGA hardware and digital signal processing techniques."
-
-"Implemented signal-processing workflows for radio-frequency classification using FPGA-based acceleration."
-
-Only write claims supported by the portfolio data.
-
-Do NOT invent performance numbers.
-
-If a project has multiple factual technical details, create multiple concise bullets rather than one long paragraph.
-
-=========================================================
-EDUCATION
-=========================================================
-
-Present education in a professional format.
-
-Prioritize:
-
-Degree
-Institution
-Location
-Period/status
-
-Keep descriptions concise and relevant.
-
-Do not add grades, coursework or achievements unless present in the portfolio.
-
-=========================================================
-CERTIFICATIONS
-=========================================================
-
-Include completed certifications.
-
-If planned certifications are supplied, include them only when explicitly requested.
-
-Clearly distinguish planned/upcoming certifications from completed certifications.
-
-Never represent a planned certification as completed.
-
-=========================================================
-ATS OPTIMIZATION
-=========================================================
-
-Naturally incorporate important keywords from the job description when those keywords accurately match the candidate's actual experience or skills.
-
-Do not keyword stuff.
-
-Do not add technologies merely because they appear in the job description.
-
-Use standard professional terminology.
-
-=========================================================
-CONTENT PRIORITY
-=========================================================
-
-For the target role, prioritize content in this order:
-
-1. Relevant technical skills
-2. Relevant projects
-3. Professional experience, if available
-4. Education
-5. Certifications
-6. Other relevant information
-
-Do not remove important factual information simply to make the resume shorter.
-
-=========================================================
-ATS FORMATTING
-=========================================================
-
-The generated content must be suitable for a clean one-column ATS resume.
-
-Do not use:
-
-- tables
-- columns
-- icons
-- emojis
-- graphics
-- decorative symbols
-- excessive capitalization
-- unnecessary text
-- motivational quotes
-- personal statements
-- references
-
-Use standard section terminology.
-
-=========================================================
-CV MODE
-=========================================================
-
-If generating a CV:
-
-- Provide more comprehensive descriptions.
-- Preserve relevant technical project details.
-- Include the candidate's complete relevant education.
-- Include relevant certifications.
-- Maintain professional academic terminology.
-
-=========================================================
-ATS RESUME MODE
-=========================================================
-
-If generating an ATS resume:
-
-- Be concise.
-- Prioritize relevance.
-- Use strong action verbs.
-- Optimize for recruiter scanning.
-- Focus on measurable or technically demonstrable work when supported by the data.
-- Avoid unnecessary descriptions.
-
-=========================================================
-FINAL QUALITY CHECK
-=========================================================
-
-Before returning the result, internally verify:
-
-1. Is every claim factually supported?
-2. Does the summary target the requested role?
-3. Is the headline professional?
-4. Are skills categorized logically?
-5. Are projects written with strong action verbs?
-6. Are irrelevant details minimized?
-7. Are there any invented metrics?
-8. Are there any invented technologies?
-9. Are there any generic AI-style statements?
-10. Would this look credible to a professional recruiter?
-
-Return ONLY the structured JSON matching the provided schema.
-
-PORTFOLIO DATA:
-
-${JSON.stringify(portfolioData)}
+Do not add commentary.
 
 `;
 
 
     /* =====================================================
-       CALL GEMINI API
+       GEMINI REQUEST
     ===================================================== */
 
     const response =
         await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
             {
+
                 method: "POST",
 
                 headers: {
+
                     "Content-Type":
                         "application/json",
 
                     "x-goog-api-key":
                         GEMINI_API_KEY
+
                 },
 
-                body: JSON.stringify({
+                body:
+                    JSON.stringify({
 
-                    contents: [
+                        contents: [
 
-                        {
-                            role: "user",
+                            {
 
-                            parts: [
+                                role: "user",
 
-                                {
-                                    text:
-                                        systemPrompt
-                                }
+                                parts: [
 
-                            ]
+                                    {
+                                        text:
+                                            systemPrompt
+                                    }
+
+                                ]
+
+                            }
+
+                        ],
+
+                        generationConfig: {
+
+                            responseMimeType:
+                                "application/json",
+
+                            responseSchema:
+                                geminiResumeSchema,
+
+                            temperature:
+                                0.15
 
                         }
 
-                    ],
-
-                    generationConfig: {
-
-                        responseMimeType:
-                            "application/json",
-
-                        responseSchema:
-                            geminiResumeSchema,
-
-                        temperature:
-                            0.2
-
-                    }
-
-                })
+                    })
 
             }
-
         );
 
 
     /* =====================================================
-       GEMINI ERROR HANDLING
+       GEMINI ERROR
     ===================================================== */
 
     if (!response.ok) {
@@ -936,24 +2432,31 @@ ${JSON.stringify(portfolioData)}
             await response.text();
 
 
-        let parsedError = null;
+        let parsedError =
+            null;
 
 
         try {
 
             parsedError =
-                JSON.parse(errorText);
+                JSON.parse(
+                    errorText
+                );
 
         } catch {
 
-            parsedError = null;
+            parsedError =
+                null;
 
         }
 
 
         const message =
-            parsedError?.error?.message ||
-            errorText;
+            parsedError
+                ?.error
+                ?.message ||
+            errorText ||
+            "Unknown Gemini API error";
 
 
         const error =
@@ -967,8 +2470,12 @@ ${JSON.stringify(portfolioData)}
 
 
         error.code =
-            parsedError?.error?.status ||
-            parsedError?.error?.code ||
+            parsedError
+                ?.error
+                ?.status ||
+            parsedError
+                ?.error
+                ?.code ||
             null;
 
 
@@ -990,25 +2497,53 @@ ${JSON.stringify(portfolioData)}
 
 
     /* =====================================================
-       READ GEMINI RESPONSE
+       PARSE GEMINI RESPONSE
     ===================================================== */
 
     const result =
         await response.json();
 
 
+    const candidates =
+        result?.candidates || [];
+
+
+    if (
+        candidates.length === 0
+    ) {
+
+        console.error(
+            "GEMINI NO CANDIDATES:",
+            JSON.stringify(result)
+        );
+
+
+        throw new Error(
+            "Gemini returned no candidates."
+        );
+
+    }
+
+
     const parts =
-        result
-            ?.candidates?.[0]
-            ?.content?.parts || [];
+        candidates[0]
+            ?.content
+            ?.parts || [];
 
 
-    let outputText = "";
+    let outputText =
+        "";
 
 
-    for (const part of parts) {
+    for (
+        const part
+        of parts
+    ) {
 
-        if (part.text) {
+        if (
+            part &&
+            typeof part.text === "string"
+        ) {
 
             outputText +=
                 part.text;
@@ -1018,27 +2553,25 @@ ${JSON.stringify(portfolioData)}
     }
 
 
-    /* =====================================================
-       CHECK EMPTY RESPONSE
-    ===================================================== */
-
-    if (!outputText) {
+    if (
+        !outputText.trim()
+    ) {
 
         console.error(
-            "GEMINI EMPTY RESPONSE:",
+            "GEMINI EMPTY OUTPUT:",
             JSON.stringify(result)
         );
 
 
         throw new Error(
-            "Gemini returned no generated resume."
+            "Gemini returned an empty response."
         );
 
     }
 
 
     /* =====================================================
-       PARSE JSON
+       JSON PARSING
     ===================================================== */
 
     try {
@@ -1056,7 +2589,7 @@ ${JSON.stringify(portfolioData)}
 
 
         throw new Error(
-            "Gemini returned invalid resume JSON."
+            "Gemini returned invalid JSON."
         );
 
     }
@@ -1065,245 +2598,360 @@ ${JSON.stringify(portfolioData)}
 
 
 /* =========================================================
-   MAIN HANDLER
+   CLEAN PLANNED CERTIFICATIONS
 ========================================================= */
 
-module.exports = async function handler(
-    req,
-    res
+function filterCertifications(
+    certificates,
+    includePlanned
 ) {
 
-    if (req.method !== "POST") {
+    if (
+        includePlanned
+    ) {
 
-        return res
-            .status(405)
-            .json({
-                error:
-                    "Method not allowed."
-            });
+        return certificates;
 
     }
 
 
-    try {
+    return certificates.filter(
+        certificate => {
 
-        /* -----------------------------------------
-           ENVIRONMENT CHECK
-        ----------------------------------------- */
-
-        if (
-            !SUPABASE_URL ||
-            !SUPABASE_PUBLISHABLE_KEY ||
-            !GEMINI_API_KEY
-        ) {
-
-            return res
-                .status(500)
-                .json({
-                    error:
-                        "Server environment variables are not configured."
-                });
-
-        }
+            const status =
+                String(
+                    certificate?.status ||
+                    "completed"
+                )
+                .trim()
+                .toLowerCase();
 
 
-        /* -----------------------------------------
-           AUTH TOKEN
-        ----------------------------------------- */
-
-        const authHeader =
-            req.headers.authorization || "";
-
-
-        if (
-            !authHeader.startsWith(
-                "Bearer "
-            )
-        ) {
-
-            return res
-                .status(401)
-                .json({
-                    error:
-                        "Authentication required."
-                });
-
-        }
-
-
-        const accessToken =
-            authHeader.substring(7);
-
-
-        const user =
-            await verifyUser(
-                accessToken
+            return (
+                status !== "planned" &&
+                status !== "upcoming" &&
+                status !== "in_progress" &&
+                status !== "in progress"
             );
 
+        }
+    );
 
-        if (!user) {
+}
+
+
+/* =========================================================
+   MAIN VERCEL HANDLER
+========================================================= */
+
+module.exports =
+    async function handler(
+        req,
+        res
+    ) {
+
+        /* -----------------------------------------
+           METHOD
+        ----------------------------------------- */
+
+        if (
+            req.method !== "POST"
+        ) {
 
             return res
-                .status(401)
+                .status(405)
                 .json({
+
                     error:
-                        "Invalid or expired session."
+                        "Method not allowed."
+
                 });
 
         }
 
 
-        /* -----------------------------------------
-           REQUEST BODY
-        ----------------------------------------- */
+        try {
 
-        const body =
-            typeof req.body === "string"
-                ? JSON.parse(req.body)
-                : req.body || {};
+            /* -----------------------------------------
+               ENVIRONMENT
+            ----------------------------------------- */
 
+            if (
+                !SUPABASE_URL ||
+                !SUPABASE_PUBLISHABLE_KEY ||
+                !GEMINI_API_KEY
+            ) {
 
-        const documentType =
-            body.documentType === "cv"
-                ? "cv"
-                : "ats";
-
-
-        const targetRole =
-            typeof body.targetRole === "string"
-                ? body.targetRole.trim()
-                : "";
+                console.error(
+                    "Missing environment variables."
+                );
 
 
-        const jobDescription =
-            typeof body.jobDescription === "string"
-                ? body.jobDescription.trim()
-                : "";
+                return res
+                    .status(500)
+                    .json({
+
+                        error:
+                            "Server environment variables are not configured."
+
+                    });
+
+            }
 
 
-        /* -----------------------------------------
-           LOAD DATA
-        ----------------------------------------- */
+            /* -----------------------------------------
+               AUTHORIZATION
+            ----------------------------------------- */
 
-        const portfolioData =
-            await loadPortfolioData(
-                accessToken
-            );
+            const authHeader =
+                req.headers
+                    ?.authorization ||
+                "";
 
 
-        /* -----------------------------------------
-           REMOVE PLANNED CERTIFICATIONS
-           BY DEFAULT
-        ----------------------------------------- */
+            if (
+                !authHeader.startsWith(
+                    "Bearer "
+                )
+            ) {
 
-        if (
-            body.includePlannedCertifications
-            !== true
-        ) {
+                return res
+                    .status(401)
+                    .json({
+
+                        error:
+                            "Authentication required."
+
+                    });
+
+            }
+
+
+            const accessToken =
+                authHeader.substring(7);
+
+
+            if (
+                !accessToken
+            ) {
+
+                return res
+                    .status(401)
+                    .json({
+
+                        error:
+                            "Authentication token is missing."
+
+                    });
+
+            }
+
+
+            /* -----------------------------------------
+               VERIFY USER
+            ----------------------------------------- */
+
+            const user =
+                await verifyUser(
+                    accessToken
+                );
+
+
+            if (
+                !user
+            ) {
+
+                return res
+                    .status(401)
+                    .json({
+
+                        error:
+                            "Invalid or expired session."
+
+                    });
+
+            }
+
+
+            /* -----------------------------------------
+               REQUEST BODY
+            ----------------------------------------- */
+
+            let body =
+                req.body || {};
+
+
+            if (
+                typeof body === "string"
+            ) {
+
+                try {
+
+                    body =
+                        JSON.parse(
+                            body
+                        );
+
+                } catch {
+
+                    return res
+                        .status(400)
+                        .json({
+
+                            error:
+                                "Invalid JSON request body."
+
+                        });
+
+                }
+
+            }
+
+
+            /* -----------------------------------------
+               DOCUMENT TYPE
+            ----------------------------------------- */
+
+            const documentType =
+                body.documentType === "cv"
+                    ? "cv"
+                    : "ats";
+
+
+            /* -----------------------------------------
+               TARGET ROLE
+            ----------------------------------------- */
+
+            const targetRole =
+                typeof body.targetRole === "string"
+                    ? body.targetRole.trim()
+                    : "";
+
+
+            /* -----------------------------------------
+               JOB DESCRIPTION
+            ----------------------------------------- */
+
+            const jobDescription =
+                typeof body.jobDescription === "string"
+                    ? body.jobDescription.trim()
+                    : "";
+
+
+            /* -----------------------------------------
+               PLANNED CERTIFICATIONS
+            ----------------------------------------- */
+
+            const includePlannedCertifications =
+                body.includePlannedCertifications === true;
+
+
+            /* -----------------------------------------
+               LOAD PORTFOLIO
+            ----------------------------------------- */
+
+            const portfolioData =
+                await loadPortfolioData(
+                    accessToken
+                );
+
+
+            /* -----------------------------------------
+               FILTER CERTIFICATIONS
+            ----------------------------------------- */
 
             portfolioData.certificates =
-                portfolioData.certificates
-                    .filter(
-                        certificate => {
-
-                            const status =
-                                String(
-                                    certificate.status ||
-                                    "completed"
-                                )
-                                .toLowerCase();
+                filterCertifications(
+                    portfolioData.certificates,
+                    includePlannedCertifications
+                );
 
 
-                            return (
-                                status !==
-                                    "planned" &&
+            /* -----------------------------------------
+               GENERATE
+            ----------------------------------------- */
 
-                                status !==
-                                    "upcoming" &&
+            const generatedDocument =
+                await generateResume(
+                    portfolioData,
+                    {
 
-                                status !==
-                                    "in_progress"
-                            );
+                        documentType,
 
-                        }
-                    );
+                        targetRole,
+
+                        jobDescription,
+
+                        includePlannedCertifications
+
+                    }
+                );
+
+
+            /* -----------------------------------------
+               SUCCESS
+            ----------------------------------------- */
+
+            return res
+                .status(200)
+                .json({
+
+                    success: true,
+
+                    documentType,
+
+                    generatedBy:
+                        GEMINI_MODEL,
+
+                    targetRole,
+
+                    data:
+                        generatedDocument
+
+                });
 
         }
 
 
-        /* -----------------------------------------
-           GENERATE
-        ----------------------------------------- */
+        /* =================================================
+           ERROR HANDLER
+        ================================================= */
 
-        const resume =
-            await generateResume(
-                portfolioData,
-                {
-                    documentType,
-                    targetRole,
-                    jobDescription
-                }
+        catch (error) {
+
+            console.error(
+                "Resume/CV generation error:",
+                error
             );
 
 
-        /* -----------------------------------------
-           SUCCESS
-        ----------------------------------------- */
-
-        return res
-            .status(200)
-            .json({
-
-                success: true,
-
-                documentType,
-
-                generatedBy:
-                    GEMINI_MODEL,
-
-                data:
-                    resume
-
-            });
-
-    }
+            const status =
+                Number.isInteger(
+                    error?.status
+                )
+                    ? error.status
+                    : 500;
 
 
-    /* =====================================================
-       ERROR HANDLER
-    ===================================================== */
+            return res
+                .status(status)
+                .json({
 
-    catch (error) {
+                    success: false,
 
-        console.error(
-            "Resume generation error:",
-            error
-        );
+                    error:
+                        "Resume generation failed.",
 
+                    message:
+                        error?.message ||
+                        "Unknown server error.",
 
-        const status =
-            Number.isInteger(error.status)
-                ? error.status
-                : 500;
+                    code:
+                        error?.code ||
+                        null
 
+                });
 
-        return res
-            .status(status)
-            .json({
+        }
 
-                success: false,
-
-                error:
-                    "Resume generation failed.",
-
-                message:
-                    error.message,
-
-                code:
-                    error.code || null
-
-            });
-
-    }
-
-};
+    };
